@@ -225,5 +225,8 @@
   "termsDialogClose": "إغلاق",
   "profileFieldPhone": "الهاتف",
   "profileFieldCompany": "الشركة",
-  "profileFieldRole": "المنصب"
+  "profileFieldRole": "المنصب",
+  "completeProfileTitle": "أكمل ملفك الشخصي",
+  "completeProfileSubtitle": "بضع بيانات إضافية — الهاتف والشركة والمنصب.",
+  "profileSaveLater": "إكمال لاحقًا"
 }

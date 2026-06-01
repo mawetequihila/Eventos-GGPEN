@@ -663,4 +663,14 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get profileFieldRole => 'Cargo';
+
+  @override
+  String get completeProfileTitle => 'Complete o seu perfil';
+
+  @override
+  String get completeProfileSubtitle =>
+      'Só mais alguns dados — telefone, empresa e cargo.';
+
+  @override
+  String get profileSaveLater => 'Concluir mais tarde';
 }

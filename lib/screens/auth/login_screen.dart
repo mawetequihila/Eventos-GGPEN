@@ -51,36 +51,61 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   const Spacer(flex: 2),
                   // Logo num "badge" branco para garantir contraste sobre
-                  // a imagem (a logo é dark, sem fundo).
+                  // a imagem (a logo é dark, sem fundo). Maior e com aro de marca.
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(26),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(
+                          color: AppColors.accent2.withValues(alpha: 0.35),
+                          width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.navyDeep.withValues(alpha: 0.35),
-                          blurRadius: 24,
-                          offset: const Offset(0, 8),
+                          color: AppColors.navyDeep.withValues(alpha: 0.45),
+                          blurRadius: 40,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 14),
                         ),
                       ],
                     ),
                     child: const BrandImage(
-                        asset: AppAssets.ggpen, height: 64),
+                        asset: AppAssets.ggpen, height: 116),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 30),
+                  // Kicker de marca.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25)),
+                    ),
+                    child: const Text(
+                      'ANGOTIC 2026',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.8,
+                        color: AppColors.accent2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     l.authWelcomeTitle,
                     textAlign: TextAlign.center,
-                    style: AppTheme.display(size: 26, color: Colors.white),
+                    style: AppTheme.display(size: 28, color: Colors.white),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     l.authWelcomeSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
-                      height: 1.4,
+                      fontSize: 14.5,
+                      height: 1.45,
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),

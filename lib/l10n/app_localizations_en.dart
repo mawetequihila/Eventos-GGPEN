@@ -661,4 +661,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileFieldRole => 'Role';
+
+  @override
+  String get completeProfileTitle => 'Complete your profile';
+
+  @override
+  String get completeProfileSubtitle =>
+      'Just a few more details — phone, company and role.';
+
+  @override
+  String get profileSaveLater => 'Finish later';
 }

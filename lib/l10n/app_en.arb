@@ -280,5 +280,8 @@
   "termsDialogClose": "Close",
   "profileFieldPhone": "Phone",
   "profileFieldCompany": "Company",
-  "profileFieldRole": "Role"
+  "profileFieldRole": "Role",
+  "completeProfileTitle": "Complete your profile",
+  "completeProfileSubtitle": "Just a few more details — phone, company and role.",
+  "profileSaveLater": "Finish later"
 }

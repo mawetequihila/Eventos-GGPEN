@@ -669,4 +669,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileFieldRole => 'Fonction';
+
+  @override
+  String get completeProfileTitle => 'Complétez votre profil';
+
+  @override
+  String get completeProfileSubtitle =>
+      'Quelques infos de plus — téléphone, entreprise et fonction.';
+
+  @override
+  String get profileSaveLater => 'Terminer plus tard';
 }

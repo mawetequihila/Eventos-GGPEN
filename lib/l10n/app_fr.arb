@@ -225,5 +225,8 @@
   "termsDialogClose": "Fermer",
   "profileFieldPhone": "Téléphone",
   "profileFieldCompany": "Entreprise",
-  "profileFieldRole": "Fonction"
+  "profileFieldRole": "Fonction",
+  "completeProfileTitle": "Complétez votre profil",
+  "completeProfileSubtitle": "Quelques infos de plus — téléphone, entreprise et fonction.",
+  "profileSaveLater": "Terminer plus tard"
 }

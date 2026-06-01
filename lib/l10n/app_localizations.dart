@@ -1319,6 +1319,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Role'**
   String get profileFieldRole;
+
+  /// No description provided for @completeProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your profile'**
+  String get completeProfileTitle;
+
+  /// No description provided for @completeProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Just a few more details — phone, company and role.'**
+  String get completeProfileSubtitle;
+
+  /// No description provided for @profileSaveLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish later'**
+  String get profileSaveLater;
 }
 
 class _AppLocalizationsDelegate

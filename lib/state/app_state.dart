@@ -7,6 +7,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/ggpen_repository.dart';
 
+/// Estado da sessão para decidir o ecrã raiz.
+/// - loggedOut: sem sessão
+/// - checking: sessão Google iniciada, a verificar o perfil
+/// - needsProfile: Google sem telefone/empresa/cargo → completar perfil
+/// - ready: pronto para a app
+enum AuthStatus { loggedOut, checking, needsProfile, ready }
+
 /// Estado global: favoritos e lembretes (locais), idioma (local) e sessão
 /// (autenticação Google via Supabase). Favoritos NUNCA vão para o backend.
 class AppState extends ChangeNotifier {
@@ -29,7 +36,14 @@ class AppState extends ChangeNotifier {
 
   final GgpenRepository _repo;
   AppState(this._repo) {
-    _authSub = _repo.authChanges.listen((_) => notifyListeners());
+    _authSub = _repo.authChanges.listen((_) {
+      // Sessão mudou: voltar a verificar o perfil do Supabase.
+      _profileChecked = false;
+      _profile = null;
+      _profileDismissed = false;
+      notifyListeners();
+      if (_repo.isLoggedIn) _checkProfile();
+    });
   }
 
   final Set<String> _favorites = {};
@@ -37,6 +51,11 @@ class AppState extends ChangeNotifier {
   Locale? _locale;
   int _reminderLeadMinutes = 15;
   Map<String, String>? _localProfile;
+
+  // Perfil Supabase (Google): linha de `profiles` + estado da verificação.
+  Map<String, dynamic>? _profile;
+  bool _profileChecked = false;
+  bool _profileDismissed = false;
 
   SharedPreferences? _prefs;
   StreamSubscription<AuthState>? _authSub;
@@ -75,6 +94,31 @@ class AppState extends ChangeNotifier {
     return _localProfile?['email'];
   }
 
+  /// Estado da sessão para o AuthGate decidir o ecrã raiz.
+  AuthStatus get authStatus {
+    if (_repo.isLoggedIn) {
+      if (_profileDismissed) return AuthStatus.ready;
+      if (!_profileChecked) return AuthStatus.checking;
+      return _profileNeedsCompletion
+          ? AuthStatus.needsProfile
+          : AuthStatus.ready;
+    }
+    if (_localProfile != null) return AuthStatus.ready;
+    return AuthStatus.loggedOut;
+  }
+
+  bool get _profileNeedsCompletion {
+    final p = _profile;
+    bool empty(dynamic v) => v == null || (v is String && v.trim().isEmpty);
+    if (p == null) return true;
+    return empty(p['telefone']) || empty(p['empresa']) || empty(p['cargo']);
+  }
+
+  // Campos do perfil (para pré-preencher o formulário).
+  String? get profilePhone => _profile?['telefone'] as String?;
+  String? get profileCompany => _profile?['empresa'] as String?;
+  String? get profileRole => _profile?['cargo'] as String?;
+
   /// Idioma escolhido. `null` = seguir o idioma do sistema.
   Locale? get locale => _locale;
 
@@ -105,6 +149,8 @@ class AppState extends ChangeNotifier {
       }
     }
     notifyListeners();
+    // Se já há sessão Google ativa (app reaberta), verifica o perfil.
+    if (_repo.isLoggedIn) _checkProfile();
   }
 
   /// Define a antecedência do lembrete (minutos antes de começar) e persiste.
@@ -173,6 +219,38 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Lê o perfil do Supabase (após login Google) para saber se faltam dados.
+  Future<void> _checkProfile() async {
+    try {
+      _profile = await _repo.getMyProfile();
+    } catch (_) {
+      _profile = null;
+    } finally {
+      _profileChecked = true;
+      notifyListeners();
+    }
+  }
+
+  /// Grava os campos extra (telefone, empresa, cargo) na tabela `profiles`.
+  Future<void> saveProfileExtra({
+    required String telefone,
+    required String empresa,
+    required String cargo,
+  }) async {
+    await _repo.updateMyProfile(
+      telefone: telefone.trim(),
+      empresa: empresa.trim(),
+      cargo: cargo.trim(),
+    );
+    await _checkProfile();
+  }
+
+  /// Permite avançar sem completar agora (volta a perguntar no próximo arranque).
+  void dismissProfilePrompt() {
+    _profileDismissed = true;
+    notifyListeners();
+  }
+
   /// Termina sessão (Google e/ou perfil local) e limpa o perfil persistido.
   Future<void> signOut() async {
     if (_repo.isLoggedIn) {
@@ -182,6 +260,9 @@ class AppState extends ChangeNotifier {
       _localProfile = null;
       await _prefs?.remove(_kLocalProfile);
     }
+    _profile = null;
+    _profileChecked = false;
+    _profileDismissed = false;
     notifyListeners();
   }
 

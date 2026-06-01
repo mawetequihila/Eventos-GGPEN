@@ -225,5 +225,8 @@
   "termsDialogClose": "Fechar",
   "profileFieldPhone": "Telefone",
   "profileFieldCompany": "Empresa",
-  "profileFieldRole": "Cargo"
+  "profileFieldRole": "Cargo",
+  "completeProfileTitle": "Complete o seu perfil",
+  "completeProfileSubtitle": "Só mais alguns dados — telefone, empresa e cargo.",
+  "profileSaveLater": "Concluir mais tarde"
 }

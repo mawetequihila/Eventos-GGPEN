@@ -28,6 +28,34 @@ class GgpenRepository {
 
   Future<void> signOut() => _db.auth.signOut();
 
+  // ================== PERFIL ==================
+  /// Perfil do utilizador autenticado (linha em `profiles`). null se não existir.
+  Future<Map<String, dynamic>?> getMyProfile() async {
+    final user = currentUser;
+    if (user == null) return null;
+    return _db.from('profiles').select().eq('id', user.id).maybeSingle();
+  }
+
+  /// Grava/atualiza os campos extra do perfil (telefone, empresa, cargo).
+  /// Usa upsert para funcionar mesmo que a linha ainda não exista.
+  Future<void> updateMyProfile({
+    String? nome,
+    String? telefone,
+    String? empresa,
+    String? cargo,
+  }) async {
+    final user = currentUser;
+    if (user == null) throw Exception('Sem sessao.');
+    final data = <String, dynamic>{
+      'id': user.id,
+      if (nome != null) 'nome': nome,
+      if (telefone != null) 'telefone': telefone,
+      if (empresa != null) 'empresa': empresa,
+      if (cargo != null) 'cargo': cargo,
+    };
+    await _db.from('profiles').upsert(data);
+  }
+
   // ================== LEITURA PUBLICA ==================
   Future<List<AppEvent>> getEvents() async {
     final rows = await _db.from('events').select().order('inicio');

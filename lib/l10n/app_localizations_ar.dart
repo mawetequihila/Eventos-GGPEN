@@ -659,4 +659,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileFieldRole => 'المنصب';
+
+  @override
+  String get completeProfileTitle => 'أكمل ملفك الشخصي';
+
+  @override
+  String get completeProfileSubtitle =>
+      'بضع بيانات إضافية — الهاتف والشركة والمنصب.';
+
+  @override
+  String get profileSaveLater => 'إكمال لاحقًا';
 }
