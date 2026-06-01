@@ -120,6 +120,12 @@ abstract class AppLocalizations {
   /// **'Speakers'**
   String get navSpeakers;
 
+  /// No description provided for @navGgpen.
+  ///
+  /// In en, this message translates to:
+  /// **'GGPEN'**
+  String get navGgpen;
+
   /// No description provided for @drawerMyAgenda.
   ///
   /// In en, this message translates to:
@@ -245,6 +251,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Map'**
   String get shortcutMap;
+
+  /// No description provided for @shortcutNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get shortcutNotifications;
+
+  /// No description provided for @shortcutBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Badge'**
+  String get shortcutBadge;
+
+  /// No description provided for @homeSignInCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get homeSignInCta;
 
   /// No description provided for @todaySchedule.
   ///
@@ -441,7 +465,7 @@ abstract class AppLocalizations {
   /// No description provided for @ggpenDescription.
   ///
   /// In en, this message translates to:
-  /// **'GGPEN coordinates Angola\'s National Space Programme, putting satellite technology at the service of connectivity, Earth observation and the country\'s digital transformation. At Angotic 2026 we show what we are building.'**
+  /// **'The National Space Programme Management Office (GGPEN) coordinates Angola\'s space programme, putting satellite technology at the service of connectivity, Earth observation and the country\'s digital transformation. At Angotic 2026 we show what we are building.'**
   String get ggpenDescription;
 
   /// No description provided for @atAngotic.
@@ -1133,6 +1157,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sessions'**
   String get speakerSessions;
+
+  /// No description provided for @authWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to GGPEN'**
+  String get authWelcomeTitle;
+
+  /// No description provided for @authWelcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow our participation at Angotic 2026.'**
+  String get authWelcomeSubtitle;
+
+  /// No description provided for @authContinueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authContinueWithGoogle;
+
+  /// No description provided for @authCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account with email'**
+  String get authCreateAccount;
+
+  /// No description provided for @authOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get authOr;
+
+  /// No description provided for @signupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account'**
+  String get signupTitle;
+
+  /// No description provided for @signupHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in your details to receive reminders and updates.'**
+  String get signupHelper;
+
+  /// No description provided for @signupNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get signupNameLabel;
+
+  /// No description provided for @signupEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get signupEmailLabel;
+
+  /// No description provided for @signupPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get signupPhoneLabel;
+
+  /// No description provided for @signupCompanyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Company / Institution'**
+  String get signupCompanyLabel;
+
+  /// No description provided for @signupRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get signupRoleLabel;
+
+  /// No description provided for @signupTermsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I accept the '**
+  String get signupTermsPrefix;
+
+  /// No description provided for @signupTermsLink.
+  ///
+  /// In en, this message translates to:
+  /// **'terms of use and data processing'**
+  String get signupTermsLink;
+
+  /// No description provided for @signupTermsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get signupTermsSuffix;
+
+  /// No description provided for @signupSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get signupSubmit;
+
+  /// No description provided for @signupHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get signupHaveAccount;
+
+  /// No description provided for @signupSignInLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signupSignInLink;
+
+  /// No description provided for @signupValidationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required field'**
+  String get signupValidationRequired;
+
+  /// No description provided for @signupValidationEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email'**
+  String get signupValidationEmail;
+
+  /// No description provided for @signupMustAcceptTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'You must accept the terms to continue.'**
+  String get signupMustAcceptTerms;
+
+  /// No description provided for @termsDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use and data processing'**
+  String get termsDialogTitle;
+
+  /// No description provided for @termsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'By creating an account, you authorise GGPEN to use your data (name, email, phone, company and role) to send you information related to Angotic 2026, agenda updates, session reminders and future communications — including advertising and marketing content related to the National Space Programme and its partners.\n\nWe do not share your data with third parties without your consent. You may request data removal at any time by contacting geral@ggpen.gov.ao.'**
+  String get termsBody;
+
+  /// No description provided for @termsDialogClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get termsDialogClose;
+
+  /// No description provided for @profileFieldPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get profileFieldPhone;
+
+  /// No description provided for @profileFieldCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get profileFieldCompany;
+
+  /// No description provided for @profileFieldRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get profileFieldRole;
 }
 
 class _AppLocalizationsDelegate

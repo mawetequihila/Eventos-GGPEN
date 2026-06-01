@@ -18,6 +18,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navSpeakers => 'المتحدثون';
 
   @override
+  String get navGgpen => 'GGPEN';
+
+  @override
   String get drawerMyAgenda => 'أجندتي';
 
   @override
@@ -81,6 +84,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shortcutMap => 'الخريطة';
+
+  @override
+  String get shortcutNotifications => 'تنبيهات';
+
+  @override
+  String get shortcutBadge => 'البطاقة';
+
+  @override
+  String get homeSignInCta => 'تسجيل الدخول';
 
   @override
   String get todaySchedule => 'جدول اليوم';
@@ -185,7 +197,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ggpenDescription =>
-      'تنسّق GGPEN البرنامج الفضائي الوطني لأنغولا، واضعةً تقنية الأقمار الصناعية في خدمة الاتصال ورصد الأرض والتحول الرقمي للبلاد. في أنغوتيك 2026 نعرض ما نبنيه.';
+      'يُنسّق مكتب إدارة البرنامج الفضائي الوطني (GGPEN) البرنامج الفضائي لأنغولا، واضعًا تقنية الأقمار الصناعية في خدمة الاتصال ورصد الأرض والتحول الرقمي للبلاد. في أنغوتيك 2026 نعرض ما نبنيه.';
 
   @override
   String get atAngotic => 'في أنغوتيك 2026';
@@ -565,4 +577,86 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get speakerSessions => 'الجلسات';
+
+  @override
+  String get authWelcomeTitle => 'مرحبًا بكم في GGPEN';
+
+  @override
+  String get authWelcomeSubtitle => 'تابعوا مشاركتنا في Angotic 2026.';
+
+  @override
+  String get authContinueWithGoogle => 'المتابعة باستخدام Google';
+
+  @override
+  String get authCreateAccount => 'إنشاء حساب بالبريد الإلكتروني';
+
+  @override
+  String get authOr => 'أو';
+
+  @override
+  String get signupTitle => 'إنشاء حسابك';
+
+  @override
+  String get signupHelper => 'املأ بياناتك لتلقي التذكيرات والمستجدات.';
+
+  @override
+  String get signupNameLabel => 'الاسم الكامل';
+
+  @override
+  String get signupEmailLabel => 'البريد الإلكتروني';
+
+  @override
+  String get signupPhoneLabel => 'الهاتف';
+
+  @override
+  String get signupCompanyLabel => 'الشركة / المؤسسة';
+
+  @override
+  String get signupRoleLabel => 'المنصب';
+
+  @override
+  String get signupTermsPrefix => 'أوافق على ';
+
+  @override
+  String get signupTermsLink => 'شروط الاستخدام ومعالجة البيانات';
+
+  @override
+  String get signupTermsSuffix => '.';
+
+  @override
+  String get signupSubmit => 'إنشاء الحساب';
+
+  @override
+  String get signupHaveAccount => 'هل لديك حساب بالفعل؟';
+
+  @override
+  String get signupSignInLink => 'تسجيل الدخول';
+
+  @override
+  String get signupValidationRequired => 'حقل مطلوب';
+
+  @override
+  String get signupValidationEmail => 'بريد إلكتروني غير صالح';
+
+  @override
+  String get signupMustAcceptTerms => 'يجب الموافقة على الشروط للمتابعة.';
+
+  @override
+  String get termsDialogTitle => 'شروط الاستخدام ومعالجة البيانات';
+
+  @override
+  String get termsBody =>
+      'بإنشاء حساب، أنت تأذن لـ GGPEN باستخدام بياناتك (الاسم، البريد الإلكتروني، الهاتف، الشركة والمنصب) لإرسال معلومات عن Angotic 2026، تحديثات الجدول، تذكيرات الجلسات والاتصالات المستقبلية — بما في ذلك المحتوى الإعلاني والتسويقي المتعلق بالبرنامج الفضائي الوطني وشركائه.\n\nلا نشارك بياناتك مع أطراف ثالثة دون موافقتك. يمكنك طلب حذف بياناتك في أي وقت بالتواصل مع geral@ggpen.gov.ao.';
+
+  @override
+  String get termsDialogClose => 'إغلاق';
+
+  @override
+  String get profileFieldPhone => 'الهاتف';
+
+  @override
+  String get profileFieldCompany => 'الشركة';
+
+  @override
+  String get profileFieldRole => 'المنصب';
 }

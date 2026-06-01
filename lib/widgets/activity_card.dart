@@ -11,7 +11,7 @@ import 'app_card.dart';
 import 'type_chip.dart';
 
 /// Cartão de actividade usado na Home e na Minha Agenda.
-class ActivityCard extends StatelessWidget {
+class ActivityCard extends StatefulWidget {
   final Activity activity;
   final VoidCallback onTap;
   final bool showReminderToggle;
@@ -24,7 +24,31 @@ class ActivityCard extends StatelessWidget {
   });
 
   @override
+  State<ActivityCard> createState() => _ActivityCardState();
+}
+
+class _ActivityCardState extends State<ActivityCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final activity = widget.activity;
     final state = context.watch<AppState>();
     final scheme = Theme.of(context).colorScheme;
     final muted = scheme.onSurface.withValues(alpha: 0.55);
@@ -33,8 +57,8 @@ class ActivityCard extends StatelessWidget {
     final isFav = state.isFavorite(activity.id);
     final isReminder = state.isReminder(activity.id);
 
-    return AppCard(
-      onTap: onTap,
+    final card = AppCard(
+      onTap: widget.onTap,
       borderColor: isLive ? AppColors.live : null,
       borderWidth: isLive ? 1.5 : 1,
       color: isLive
@@ -84,12 +108,13 @@ class ActivityCard extends StatelessWidget {
           Column(
             children: [
               _IconAction(
-                icon: LucideIcons.star,
+                icon: isFav ? Icons.bookmark_rounded : LucideIcons.bookmark,
                 active: isFav,
-                activeColor: AppColors.gold,
-                onTap: () => context.read<AppState>().toggleFavorite(activity.id),
+                activeColor: AppColors.techBlue,
+                onTap: () =>
+                    context.read<AppState>().toggleFavorite(activity.id),
               ),
-              if (showReminderToggle && isFav)
+              if (widget.showReminderToggle && isFav)
                 _IconAction(
                   icon: isReminder ? LucideIcons.bellRing : LucideIcons.bell,
                   active: isReminder,
@@ -101,6 +126,30 @@ class ActivityCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (!isLive) return card;
+
+    // Glow pulsante âmbar quando a sessão está EM CURSO.
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (_, child) {
+        final t = _pulse.value;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.live.withValues(alpha: 0.10 + 0.18 * t),
+                blurRadius: 14 + 10 * t,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: card,
     );
   }
 

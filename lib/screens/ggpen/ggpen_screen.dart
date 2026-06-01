@@ -56,9 +56,8 @@ class GgpenScreen extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           // Logo sem fundo, sobre o fundo claro do ecrã.
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: BrandImage(asset: AppAssets.ggpen, height: 64),
+          const Center(
+            child: BrandImage(asset: AppAssets.ggpen, height: 84),
           ),
           const SizedBox(height: 16),
           Text(
@@ -105,7 +104,7 @@ class GgpenScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Center(child: BrandImage(asset: AppAssets.angotic, height: 30)),
+          const Center(child: BrandImage(asset: AppAssets.angotic, height: 40)),
         ],
       ),
     );

@@ -12,7 +12,7 @@ class BrandImage extends StatelessWidget {
   final String asset;
   final double height;
 
-  const BrandImage({super.key, required this.asset, this.height = 32});
+  const BrandImage({super.key, required this.asset, this.height = 40});
 
   @override
   Widget build(BuildContext context) {

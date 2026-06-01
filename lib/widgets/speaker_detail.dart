@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../data/ggpen_models.dart' as sb;
@@ -8,22 +9,18 @@ import '../models/speaker.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
-/// Abre a ficha do orador (foto/iniciais, cargo, sessões e biografia).
+/// Abre a ficha do orador num diálogo centrado.
 Future<void> showSpeakerDetail(BuildContext context, Speaker speaker) {
-  return showModalBottomSheet<void>(
+  return showDialog<void>(
     context: context,
-    backgroundColor: Colors.white,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (ctx) => _SpeakerDetailSheet(speaker: speaker),
+    barrierColor: AppColors.navy.withValues(alpha: 0.55),
+    builder: (ctx) => _SpeakerDetailDialog(speaker: speaker),
   );
 }
 
-class _SpeakerDetailSheet extends StatelessWidget {
+class _SpeakerDetailDialog extends StatelessWidget {
   final Speaker speaker;
-  const _SpeakerDetailSheet({required this.speaker});
+  const _SpeakerDetailDialog({required this.speaker});
 
   String _hhmm(DateTime d) =>
       '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
@@ -36,133 +33,188 @@ class _SpeakerDetailSheet extends StatelessWidget {
     final bio = speaker.bio?.trim() ?? '';
     final repo = context.read<GgpenRepository>();
 
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.92,
-      builder: (context, scrollController) {
-        return ListView(
-          controller: scrollController,
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+    final mq = MediaQuery.of(context);
+    final maxH = mq.size.height * 0.86;
+
+    return Dialog(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      clipBehavior: Clip.antiAlias,
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 440, maxHeight: maxH),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.line,
-                  borderRadius: BorderRadius.circular(2),
+            // Header com gradiente da cor do orador (visual anchor).
+            _Header(speaker: speaker, hasPhoto: hasPhoto),
+            // Corpo scrollable.
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: FutureBuilder<List<sb.Activity>>(
+                  future: speaker.id == null
+                      ? Future.value(const <sb.Activity>[])
+                      : repo.getSpeakerSessions(speaker.id!),
+                  builder: (context, snap) {
+                    final sessions = snap.data ?? const <sb.Activity>[];
+                    final count = sessions.isNotEmpty
+                        ? sessions.length
+                        : speaker.sessions;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: speaker.color.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Text(
+                              l.sessionsCount(count),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: speaker.color),
+                            ),
+                          ),
+                        ),
+                        if (sessions.isNotEmpty) ...[
+                          const SizedBox(height: 22),
+                          Text(l.speakerSessions.toUpperCase(),
+                              style: AppTheme.overline(
+                                  AppColors.navy.withValues(alpha: 0.45))),
+                          const SizedBox(height: 10),
+                          ...sessions.map((a) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.bg,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        Border.all(color: AppColors.line),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(a.titulo,
+                                          style: AppTheme.cardTitle()),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
+                                        style: AppTheme.meta(muted),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )),
+                        ],
+                        const SizedBox(height: 22),
+                        Text(l.aboutSpeaker.toUpperCase(),
+                            style: AppTheme.overline(
+                                AppColors.navy.withValues(alpha: 0.45))),
+                        const SizedBox(height: 8),
+                        Text(
+                          bio.isEmpty ? l.noBio : bio,
+                          style: TextStyle(
+                              fontSize: 14, height: 1.55, color: muted),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: CircleAvatar(
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final Speaker speaker;
+  final bool hasPhoto;
+  const _Header({required this.speaker, required this.hasPhoto});
+
+  @override
+  Widget build(BuildContext context) {
+    final base = speaker.color;
+    final dark = Color.alphaBlend(
+        Colors.black.withValues(alpha: 0.22), base);
+
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [base, dark],
+            ),
+          ),
+          child: Column(
+            children: [
+              CircleAvatar(
                 radius: 44,
-                backgroundColor: speaker.color,
-                backgroundImage:
+                backgroundColor: Colors.white.withValues(alpha: 0.22),
+                foregroundImage:
                     hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
                 child: hasPhoto
                     ? null
                     : Text(
                         speaker.initials,
                         style: AppTheme.display(
-                            size: 26,
+                            size: 28,
                             weight: FontWeight.w700,
                             color: Colors.white),
                       ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              speaker.name,
-              textAlign: TextAlign.center,
-              style: AppTheme.display(size: 20, color: AppColors.navy),
-            ),
-            if (speaker.role.trim().isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 14),
               Text(
-                speaker.role,
+                speaker.name,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: muted, height: 1.35),
+                style: AppTheme.display(size: 19, color: Colors.white),
               ),
+              if (speaker.role.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  speaker.role,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 13,
+                      height: 1.35,
+                      color: Colors.white.withValues(alpha: 0.88)),
+                ),
+              ],
             ],
-            // Sessões do orador (vindas do Supabase) + contagem real no badge.
-            FutureBuilder<List<sb.Activity>>(
-              future: speaker.id == null
-                  ? Future.value(const <sb.Activity>[])
-                  : repo.getSpeakerSessions(speaker.id!),
-              builder: (context, snap) {
-                final sessions = snap.data ?? const <sb.Activity>[];
-                final count =
-                    sessions.isNotEmpty ? sessions.length : speaker.sessions;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 12),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: speaker.color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Text(
-                          l.sessionsCount(count),
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: speaker.color),
-                        ),
-                      ),
-                    ),
-                    if (sessions.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      Text(l.speakerSessions.toUpperCase(),
-                          style: AppTheme.overline(
-                              AppColors.navy.withValues(alpha: 0.45))),
-                      const SizedBox(height: 8),
-                      ...sessions.map((a) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.bg,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.line),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(a.titulo,
-                                      style: AppTheme.cardTitle()),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
-                                    style: AppTheme.meta(muted),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )),
-                    ],
-                  ],
-                );
-              },
+          ),
+        ),
+        // Botão de fechar — afordância clara e ao alcance do polegar.
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: Colors.white.withValues(alpha: 0.18),
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: IconButton(
+              icon: const Icon(LucideIcons.x, color: Colors.white, size: 18),
+              visualDensity: VisualDensity.compact,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            const SizedBox(height: 24),
-            Text(l.aboutSpeaker.toUpperCase(),
-                style: AppTheme.overline(AppColors.navy.withValues(alpha: 0.45))),
-            const SizedBox(height: 8),
-            Text(
-              bio.isEmpty ? l.noBio : bio,
-              style: TextStyle(fontSize: 14, height: 1.55, color: muted),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 }

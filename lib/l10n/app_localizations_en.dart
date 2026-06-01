@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navSpeakers => 'Speakers';
 
   @override
+  String get navGgpen => 'GGPEN';
+
+  @override
   String get drawerMyAgenda => 'My Agenda';
 
   @override
@@ -81,6 +84,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shortcutMap => 'Map';
+
+  @override
+  String get shortcutNotifications => 'Alerts';
+
+  @override
+  String get shortcutBadge => 'Badge';
+
+  @override
+  String get homeSignInCta => 'Sign in';
 
   @override
   String get todaySchedule => 'Today\'s schedule';
@@ -186,7 +198,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ggpenDescription =>
-      'GGPEN coordinates Angola\'s National Space Programme, putting satellite technology at the service of connectivity, Earth observation and the country\'s digital transformation. At Angotic 2026 we show what we are building.';
+      'The National Space Programme Management Office (GGPEN) coordinates Angola\'s space programme, putting satellite technology at the service of connectivity, Earth observation and the country\'s digital transformation. At Angotic 2026 we show what we are building.';
 
   @override
   String get atAngotic => 'At Angotic 2026';
@@ -566,4 +578,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get speakerSessions => 'Sessions';
+
+  @override
+  String get authWelcomeTitle => 'Welcome to GGPEN';
+
+  @override
+  String get authWelcomeSubtitle => 'Follow our participation at Angotic 2026.';
+
+  @override
+  String get authContinueWithGoogle => 'Continue with Google';
+
+  @override
+  String get authCreateAccount => 'Create account with email';
+
+  @override
+  String get authOr => 'or';
+
+  @override
+  String get signupTitle => 'Create your account';
+
+  @override
+  String get signupHelper =>
+      'Fill in your details to receive reminders and updates.';
+
+  @override
+  String get signupNameLabel => 'Full name';
+
+  @override
+  String get signupEmailLabel => 'Email';
+
+  @override
+  String get signupPhoneLabel => 'Phone';
+
+  @override
+  String get signupCompanyLabel => 'Company / Institution';
+
+  @override
+  String get signupRoleLabel => 'Role';
+
+  @override
+  String get signupTermsPrefix => 'I accept the ';
+
+  @override
+  String get signupTermsLink => 'terms of use and data processing';
+
+  @override
+  String get signupTermsSuffix => '.';
+
+  @override
+  String get signupSubmit => 'Create account';
+
+  @override
+  String get signupHaveAccount => 'Already have an account?';
+
+  @override
+  String get signupSignInLink => 'Sign in';
+
+  @override
+  String get signupValidationRequired => 'Required field';
+
+  @override
+  String get signupValidationEmail => 'Invalid email';
+
+  @override
+  String get signupMustAcceptTerms => 'You must accept the terms to continue.';
+
+  @override
+  String get termsDialogTitle => 'Terms of use and data processing';
+
+  @override
+  String get termsBody =>
+      'By creating an account, you authorise GGPEN to use your data (name, email, phone, company and role) to send you information related to Angotic 2026, agenda updates, session reminders and future communications — including advertising and marketing content related to the National Space Programme and its partners.\n\nWe do not share your data with third parties without your consent. You may request data removal at any time by contacting geral@ggpen.gov.ao.';
+
+  @override
+  String get termsDialogClose => 'Close';
+
+  @override
+  String get profileFieldPhone => 'Phone';
+
+  @override
+  String get profileFieldCompany => 'Company';
+
+  @override
+  String get profileFieldRole => 'Role';
 }

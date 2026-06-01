@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
@@ -19,6 +20,7 @@ class FloatingNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Container(
@@ -38,34 +40,48 @@ class FloatingNav extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _item(LucideIcons.home, 0),
-            _item(LucideIcons.calendar, 1),
+            _item(LucideIcons.home, l.navHome, 0),
+            _item(LucideIcons.calendar, l.navAgenda, 1),
             _fab(),
-            _item(LucideIcons.users, 2),
-            _item(LucideIcons.satellite, 3),
+            _item(LucideIcons.users, l.navSpeakers, 2),
+            _item(LucideIcons.satellite, l.navGgpen, 3),
           ],
         ),
       ),
     );
   }
 
-  Widget _item(IconData icon, int index) {
+  Widget _item(IconData icon, String label, int index) {
     final active = index == selectedIndex;
+    final color = active ? AppColors.accent2 : Colors.white54;
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => onSelect(index),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 2),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             color: active ? Colors.white.withValues(alpha: 0.10) : null,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            icon,
-            size: 21,
-            color: active ? AppColors.accent2 : Colors.white54,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20, color: color),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
           ),
         ),
       ),

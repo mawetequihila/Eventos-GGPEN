@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,6 +11,7 @@ import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/activity_card.dart';
+import '../../widgets/brand_logo.dart';
 import '../../widgets/data_status.dart';
 import '../../widgets/home_banner.dart';
 import '../../widgets/session_countdown.dart';
@@ -20,6 +23,7 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback onOpenSaved;
   final VoidCallback onOpenMap;
   final VoidCallback onOpenNotifications;
+  final VoidCallback onOpenPerfil;
 
   const HomeScreen({
     super.key,
@@ -28,6 +32,7 @@ class HomeScreen extends StatelessWidget {
     required this.onOpenSaved,
     required this.onOpenMap,
     required this.onOpenNotifications,
+    required this.onOpenPerfil,
   });
 
   String _greeting(AppLocalizations l) {
@@ -64,6 +69,21 @@ class HomeScreen extends StatelessWidget {
     final next = upcoming.isNotEmpty ? upcoming.first : null;
     final today = es.byDay(1);
 
+    // Contagem de notificações não-lidas (mesma lógica que NotificationsScreen).
+    final lead = Duration(minutes: state.reminderLeadMinutes);
+    var unread = 1; // boas-vindas sempre presente
+    for (final a in activities) {
+      final status = a.statusAt(now);
+      if (status == ActivityStatus.live) {
+        unread++;
+      } else {
+        final fire = a.start.subtract(lead);
+        if (!now.isBefore(fire) && now.isBefore(a.start)) {
+          unread++;
+        }
+      }
+    }
+
     void openDetail(Activity a) => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ActivityDetailScreen(activity: a)));
 
@@ -73,36 +93,68 @@ class HomeScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
           children: [
-            // Top bar
+            // Top bar — logo centrada, ladeada pelo menu e pelo sino.
             Row(
               children: [
                 _RoundBtn(icon: LucideIcons.menu, onTap: onMenu),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    l.greetingLine(_greeting(l), state.userName ?? l.guest),
-                    style: AppTheme.display(size: 20, color: AppColors.navy),
+                const Expanded(
+                  child: Center(
+                    child: BrandImage(
+                        asset: AppAssets.ggpen, height: 88),
                   ),
                 ),
                 Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     _RoundBtn(icon: LucideIcons.bell, onTap: onOpenNotifications),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 9,
-                        height: 9,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF4D4D),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.bg, width: 2),
+                    if (unread > 0)
+                      Positioned(
+                        top: -2,
+                        right: -2,
+                        child: Container(
+                          constraints:
+                              const BoxConstraints(minWidth: 18, minHeight: 18),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF4D4D),
+                            borderRadius: BorderRadius.circular(9),
+                            border:
+                                Border.all(color: AppColors.bg, width: 2),
+                          ),
+                          child: Center(
+                            child: Text(
+                              unread > 99 ? '99+' : '$unread',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                height: 1,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            Center(
+              child: Container(
+                width: 48,
+                height: 3,
+                decoration: BoxDecoration(
+                  gradient: AppColors.brandGradient,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                l.greetingLine(_greeting(l), state.userName ?? l.guest),
+                style: AppTheme.display(size: 18, color: AppColors.navy),
+              ),
             ),
             const SizedBox(height: AppTheme.sectionGap),
 
@@ -138,11 +190,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: AppTheme.labelGap),
             Row(
               children: [
-                _Shortcut(icon: LucideIcons.calendar, label: l.shortcutAgenda, onTap: onOpenAgenda),
-                const SizedBox(width: 10),
                 _Shortcut(icon: LucideIcons.bookmark, label: l.shortcutSaved, onTap: onOpenSaved),
                 const SizedBox(width: 10),
-                _Shortcut(icon: LucideIcons.map, label: l.shortcutMap, onTap: onOpenMap),
+                _Shortcut(icon: LucideIcons.bell, label: l.shortcutNotifications, onTap: onOpenNotifications),
               ],
             ),
 
@@ -172,30 +222,96 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _CountdownCard extends StatelessWidget {
+class _CountdownCard extends StatefulWidget {
   final Activity? next;
   const _CountdownCard({required this.next});
 
   @override
+  State<_CountdownCard> createState() => _CountdownCardState();
+}
+
+class _CountdownCardState extends State<_CountdownCard>
+    with SingleTickerProviderStateMixin {
+  Timer? _tick;
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    // Tick a cada segundo para reavaliar se a sessão está prestes a começar.
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final n = next;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-      decoration: BoxDecoration(
-        gradient: AppColors.bannerFallback,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-              color: AppColors.navy.withValues(alpha: 0.22),
-              blurRadius: 22,
-              offset: const Offset(0, 10)),
-        ],
-      ),
+    final n = widget.next;
+
+    final diff = n?.start.difference(DateTime.now()) ?? Duration.zero;
+    final isUrgent =
+        n != null && diff.inSeconds > 0 && diff.inMinutes < 5;
+
+    final overlineColor = isUrgent
+        ? AppColors.liveBright
+        : Colors.white.withValues(alpha: 0.6);
+
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (_, child) {
+        final t = _pulse.value;
+        final shadow = isUrgent
+            ? BoxShadow(
+                color: AppColors.live.withValues(alpha: 0.25 + 0.20 * t),
+                blurRadius: 22 + 10 * t,
+                offset: const Offset(0, 10),
+              )
+            : BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.22),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              );
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+          decoration: BoxDecoration(
+            gradient: AppColors.bannerFallback,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [shadow],
+          ),
+          child: child,
+        );
+      },
       child: Column(
         children: [
-          Text(l.nextSessionStartsIn,
-              style: AppTheme.overline(Colors.white.withValues(alpha: 0.6))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isUrgent) ...[
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                      color: AppColors.liveBright, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(l.nextSessionStartsIn,
+                  style: AppTheme.overline(overlineColor)),
+            ],
+          ),
           const SizedBox(height: 18),
           if (n != null) ...[
             SessionCountdown(target: n.start, onDark: true),

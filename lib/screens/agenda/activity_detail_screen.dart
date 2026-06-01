@@ -12,6 +12,7 @@ import '../../models/speaker.dart';
 import '../../services/notification_service.dart';
 import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
+import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/data_status.dart';
@@ -59,14 +60,11 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
       appBar: AppBar(
         actions: [
           IconButton(
-            icon: Icon(LucideIcons.bookmark,
-                color: isFav ? AppColors.gold : Colors.white),
+            icon: Icon(
+              isFav ? Icons.bookmark_rounded : LucideIcons.bookmark,
+              color: isFav ? AppColors.accent2 : Colors.white,
+            ),
             onPressed: () => context.read<AppState>().toggleFavorite(activity.id),
-          ),
-          IconButton(
-            icon: const Icon(LucideIcons.share2),
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l.linkCopied))),
           ),
         ],
       ),
@@ -302,9 +300,14 @@ class _SpeakerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final es = context.watch<EventState>();
+    final count = es.activities
+        .where((a) => (a.speaker ?? '').contains(speaker.nome))
+        .length;
     final org = speaker.organizacao?.trim() ?? '';
-    final base = org.isEmpty ? l.guestSpeaker : org;
-    final role = speaker.papel == 'moderador' ? '${l.moderator} · $base' : base;
+    final baseRole = org.isEmpty ? l.guestSpeaker : org;
+    final fullRole =
+        speaker.papel == 'moderador' ? '${l.moderator} · $baseRole' : baseRole;
     final hasPhoto = (speaker.avatarUrl ?? '').isNotEmpty;
 
     void openDetail() => showSpeakerDetail(
@@ -312,10 +315,10 @@ class _SpeakerCard extends StatelessWidget {
           Speaker(
             id: speaker.id,
             name: speaker.nome,
-            role: org,
+            role: fullRole,
             bio: speaker.bio,
             avatarUrl: speaker.avatarUrl,
-            sessions: 0,
+            sessions: count,
             color: color,
           ),
         );
@@ -353,7 +356,8 @@ class _SpeakerCard extends StatelessWidget {
                   children: [
                     Text(speaker.nome, style: AppTheme.cardTitle()),
                     const SizedBox(height: 2),
-                    Text(role, style: AppTheme.meta(muted)),
+                    Text(l.sessionsCount(count),
+                        style: AppTheme.meta(muted)),
                   ],
                 ),
               ),

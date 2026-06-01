@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +14,7 @@ class AppState extends ChangeNotifier {
   static const _kReminders = 'reminders';
   static const _kLocale = 'locale';
   static const _kLeadMinutes = 'reminderLeadMinutes';
+  static const _kLocalProfile = 'localProfile';
 
   /// Opções de antecedência do lembrete (minutos antes de começar).
   static const List<int> leadOptions = [0, 5, 10, 15, 30];
@@ -34,25 +36,43 @@ class AppState extends ChangeNotifier {
   final Set<String> _reminders = {};
   Locale? _locale;
   int _reminderLeadMinutes = 15;
+  Map<String, String>? _localProfile;
 
   SharedPreferences? _prefs;
   StreamSubscription<AuthState>? _authSub;
 
   Set<String> get favorites => Set.unmodifiable(_favorites);
 
-  /// Sessão Google iniciada?
-  bool get isLoggedIn => _repo.isLoggedIn;
+  /// Sessão iniciada — Google (Supabase) OU perfil local.
+  bool get isLoggedIn => _repo.isLoggedIn || _localProfile != null;
 
-  /// Nome a mostrar do utilizador autenticado (ou `null` sem sessão).
+  /// Perfil local (quando o utilizador se inscreveu pelo formulário). Apenas
+  /// guardado em SharedPreferences. Sem backend.
+  Map<String, String>? get localProfile =>
+      _localProfile == null ? null : Map.unmodifiable(_localProfile!);
+
+  /// Nome a mostrar do utilizador autenticado (Google ou perfil local).
   String? get userName {
     final user = _repo.currentUser;
-    if (user == null) return null;
-    final meta = user.userMetadata;
-    final fullName = meta?['full_name'] ?? meta?['name'];
-    if (fullName is String && fullName.trim().isNotEmpty) return fullName.trim();
-    final email = user.email;
-    if (email != null && email.isNotEmpty) return email.split('@').first;
+    if (user != null) {
+      final meta = user.userMetadata;
+      final fullName = meta?['full_name'] ?? meta?['name'];
+      if (fullName is String && fullName.trim().isNotEmpty) {
+        return fullName.trim();
+      }
+      final email = user.email;
+      if (email != null && email.isNotEmpty) return email.split('@').first;
+    }
+    final localName = _localProfile?['name']?.trim();
+    if (localName != null && localName.isNotEmpty) return localName;
     return null;
+  }
+
+  /// Email da sessão (Google ou perfil local).
+  String? get userEmail {
+    final googleEmail = _repo.currentUser?.email;
+    if (googleEmail != null && googleEmail.isNotEmpty) return googleEmail;
+    return _localProfile?['email'];
   }
 
   /// Idioma escolhido. `null` = seguir o idioma do sistema.
@@ -71,6 +91,19 @@ class AppState extends ChangeNotifier {
       _locale = Locale(code);
     }
     _reminderLeadMinutes = prefs.getInt(_kLeadMinutes) ?? 15;
+    final profileStr = prefs.getString(_kLocalProfile);
+    if (profileStr != null && profileStr.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(profileStr);
+        if (decoded is Map) {
+          _localProfile = {
+            for (final e in decoded.entries) e.key.toString(): e.value.toString(),
+          };
+        }
+      } catch (_) {
+        // ignora perfil corrompido
+      }
+    }
     notifyListeners();
   }
 
@@ -116,10 +149,41 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Autenticação (Google via Supabase) ----
+  // ---- Autenticação ----
+  /// Sessão Google (Supabase).
   Future<void> signInWithGoogle() => _repo.signInWithGoogle();
 
-  Future<void> signOut() => _repo.signOut();
+  /// Cria/actualiza um perfil local (apenas em SharedPreferences — sem backend).
+  /// Usado pelo formulário manual de inscrição.
+  Future<void> signUpLocal({
+    required String name,
+    required String email,
+    required String phone,
+    required String company,
+    required String role,
+  }) async {
+    _localProfile = {
+      'name': name.trim(),
+      'email': email.trim(),
+      'phone': phone.trim(),
+      'company': company.trim(),
+      'role': role.trim(),
+    };
+    await _prefs?.setString(_kLocalProfile, jsonEncode(_localProfile));
+    notifyListeners();
+  }
+
+  /// Termina sessão (Google e/ou perfil local) e limpa o perfil persistido.
+  Future<void> signOut() async {
+    if (_repo.isLoggedIn) {
+      await _repo.signOut();
+    }
+    if (_localProfile != null) {
+      _localProfile = null;
+      await _prefs?.remove(_kLocalProfile);
+    }
+    notifyListeners();
+  }
 
   void _persistLists() {
     _prefs?.setStringList(_kFavorites, _favorites.toList());

@@ -51,7 +51,7 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const BrandImage(asset: AppAssets.ggpen, height: 46),
+                const BrandImage(asset: AppAssets.ggpen, height: 58),
                 const SizedBox(height: 14),
                 Text(
                   l.drawerHeaderTitle,

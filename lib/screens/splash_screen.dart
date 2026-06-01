@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 
 import '../theme/app_colors.dart';
-import 'home_shell.dart';
+import 'auth/auth_gate.dart';
 
 /// Abertura clara com anel orbital animado (eco do Angotic).
 class SplashScreen extends StatefulWidget {
@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen>
     Timer(const Duration(milliseconds: 2200), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeShell()),
+        MaterialPageRoute(builder: (_) => const AuthGate()),
       );
     });
   }

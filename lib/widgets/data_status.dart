@@ -4,14 +4,99 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 
-/// Indicador de carregamento centrado.
-class LoadingView extends StatelessWidget {
+/// Estado de carregamento: skeletons pulsantes com a forma dos cartões.
+class LoadingView extends StatefulWidget {
   const LoadingView({super.key});
 
   @override
+  State<LoadingView> createState() => _LoadingViewState();
+}
+
+class _LoadingViewState extends State<LoadingView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ac;
+
+  @override
+  void initState() {
+    super.initState();
+    _ac = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ac.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.techBlue),
+    return AnimatedBuilder(
+      animation: _ac,
+      builder: (_, __) {
+        final t = _ac.value;
+        final base = AppColors.line.withValues(alpha: 0.55 + 0.35 * t);
+        final inner = AppColors.line.withValues(alpha: 0.85 + 0.10 * t);
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          children: [
+            for (var i = 0; i < 5; i++) ...[
+              _SkeletonCard(base: base, inner: inner),
+              const SizedBox(height: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  final Color base;
+  final Color inner;
+  const _SkeletonCard({required this.base, required this.inner});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _bar(width: 70, height: 10, color: inner),
+          const SizedBox(height: 10),
+          _bar(width: double.infinity, height: 14, color: base),
+          const SizedBox(height: 6),
+          _bar(width: 220, height: 14, color: base),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _bar(width: 90, height: 10, color: inner),
+              const SizedBox(width: 14),
+              _bar(width: 120, height: 10, color: inner),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bar(
+      {required double width, required double height, required Color color}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
     );
   }
 }

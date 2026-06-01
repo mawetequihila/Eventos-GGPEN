@@ -18,7 +18,6 @@ class ProfileScreen extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final state = context.watch<AppState>();
     final es = context.watch<EventState>();
-    final muted = AppColors.navy.withValues(alpha: 0.6);
 
     final favCount =
         es.activities.where((a) => state.isFavorite(a.id)).length;
@@ -107,39 +106,17 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          if (state.isLoggedIn)
-            OutlinedButton.icon(
-              onPressed: () => context.read<AppState>().signOut(),
-              icon: const Icon(LucideIcons.logOut, size: 18),
-              label: Text(l.logout),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
-            )
-          else
-            FilledButton.icon(
-              onPressed: () => _signIn(context),
-              icon: const Icon(LucideIcons.logIn, size: 18),
-              label: Text(l.signInWithGoogleBtn),
+          OutlinedButton.icon(
+            onPressed: () => context.read<AppState>().signOut(),
+            icon: const Icon(LucideIcons.logOut, size: 18),
+            label: Text(l.logout),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
             ),
-          const SizedBox(height: 10),
-          Text(
-            l.loginOptionalNote,
-            style: TextStyle(fontSize: 12, color: muted),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _signIn(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await context.read<AppState>().signInWithGoogle();
-      // O ecrã reage automaticamente a authChanges quando a sessão é criada.
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('$e')));
-    }
   }
 }
 

@@ -92,6 +92,7 @@ class _HomeShellState extends State<HomeShell> {
         onOpenSaved: _openMinha,
         onOpenMap: _openMapa,
         onOpenNotifications: _openNotif,
+        onOpenPerfil: _openPerfil,
       ),
       AgendaScreen(onMenu: _openMenu),
       SpeakersScreen(onMenu: _openMenu),

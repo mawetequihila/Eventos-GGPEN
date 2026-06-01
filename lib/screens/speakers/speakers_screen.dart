@@ -101,32 +101,18 @@ class _SpeakerCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      speaker.name,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTheme.display(
-                          size: 13.5,
-                          weight: FontWeight.w700,
-                          color: AppColors.navy,
-                          height: 1.2),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      speaker.role,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 11,
-                          height: 1.2,
-                          color: AppColors.navy.withValues(alpha: 0.55)),
-                    ),
-                  ],
+                child: Center(
+                  child: Text(
+                    speaker.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.display(
+                        size: 14,
+                        weight: FontWeight.w700,
+                        color: AppColors.navy,
+                        height: 1.2),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
