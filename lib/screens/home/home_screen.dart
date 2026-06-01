@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/mock_data.dart';
 import '../../models/activity.dart';
 import '../../state/app_state.dart';
+import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/activity_card.dart';
+import '../../widgets/data_status.dart';
 import '../../widgets/home_banner.dart';
 import '../../widgets/session_countdown.dart';
 import '../agenda/activity_detail_screen.dart';
@@ -28,18 +30,28 @@ class HomeScreen extends StatelessWidget {
     required this.onOpenNotifications,
   });
 
-  String _greeting() {
+  String _greeting(AppLocalizations l) {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Bom dia';
-    if (h < 19) return 'Boa tarde';
-    return 'Boa noite';
+    if (h < 12) return l.greetingMorning;
+    if (h < 19) return l.greetingAfternoon;
+    return l.greetingEvening;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final state = context.watch<AppState>();
+    final es = context.watch<EventState>();
     final now = DateTime.now();
-    final activities = MockData.activities;
+
+    if (es.status == LoadStatus.error) {
+      return Scaffold(body: SafeArea(child: ErrorView(onRetry: es.load)));
+    }
+    if (!es.isReady) {
+      return const Scaffold(body: SafeArea(child: LoadingView()));
+    }
+
+    final activities = es.activities;
 
     final live = activities
         .where((a) => a.statusAt(now) == ActivityStatus.live)
@@ -50,7 +62,7 @@ class HomeScreen extends StatelessWidget {
         .toList()
       ..sort((a, b) => a.start.compareTo(b.start));
     final next = upcoming.isNotEmpty ? upcoming.first : null;
-    final today = MockData.byDay(1);
+    final today = es.byDay(1);
 
     void openDetail(Activity a) => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ActivityDetailScreen(activity: a)));
@@ -68,7 +80,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '${_greeting()}, ${state.userName ?? 'visitante'}',
+                    l.greetingLine(_greeting(l), state.userName ?? l.guest),
                     style: AppTheme.display(size: 20, color: AppColors.navy),
                   ),
                 ),
@@ -95,42 +107,42 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: AppTheme.sectionGap),
 
             // Banner principal: carrossel de imagens do evento.
-            const HomeBanner(
-              images: [
+            HomeBanner(
+              images: const [
                 'assets/banners/home.jpg',
                 'assets/banners/ggpen.jpg',
                 'assets/banners/perfil.jpg',
               ],
-              title: EventInfo.name,
-              subtitle: EventInfo.subtitle,
+              title: es.event?.nome ?? 'Angotic 2026',
+              subtitle: l.eventSubtitle,
             ),
             const SizedBox(height: AppTheme.sectionGap),
 
             // A decorrer agora — primeiro card, para o utilizador saber já o
             // que está a acontecer no momento.
-            const _SLabel('A decorrer agora'),
+            _SLabel(l.liveNow),
             const SizedBox(height: AppTheme.labelGap),
             if (live.isNotEmpty)
               ...live.map((a) => Padding(
                   padding: const EdgeInsets.only(bottom: AppTheme.cardGap),
                   child: ActivityCard(activity: a, onTap: () => openDetail(a))))
             else
-              const _Hint(text: 'Nenhuma sessão a decorrer neste momento.'),
+              _Hint(text: l.noLiveSession),
             const SizedBox(height: AppTheme.sectionGap),
 
             // Próxima sessão (contagem decrescente para o evento seguinte)
             _CountdownCard(next: next),
             const SizedBox(height: AppTheme.sectionGap),
 
-            const _SLabel('Acesso rápido'),
+            _SLabel(l.quickAccess),
             const SizedBox(height: AppTheme.labelGap),
             Row(
               children: [
-                _Shortcut(icon: LucideIcons.calendar, label: 'Agenda', onTap: onOpenAgenda),
+                _Shortcut(icon: LucideIcons.calendar, label: l.shortcutAgenda, onTap: onOpenAgenda),
                 const SizedBox(width: 10),
-                _Shortcut(icon: LucideIcons.bookmark, label: 'Guardadas', onTap: onOpenSaved),
+                _Shortcut(icon: LucideIcons.bookmark, label: l.shortcutSaved, onTap: onOpenSaved),
                 const SizedBox(width: 10),
-                _Shortcut(icon: LucideIcons.map, label: 'Mapa', onTap: onOpenMap),
+                _Shortcut(icon: LucideIcons.map, label: l.shortcutMap, onTap: onOpenMap),
               ],
             ),
 
@@ -138,11 +150,11 @@ class HomeScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const _SLabel('Programação de hoje'),
+                _SLabel(l.todaySchedule),
                 GestureDetector(
                   onTap: onOpenAgenda,
-                  child: const Text('Ver tudo →',
-                      style: TextStyle(
+                  child: Text(l.seeAll,
+                      style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: AppColors.techBlue)),
@@ -166,6 +178,7 @@ class _CountdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final n = next;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
@@ -181,7 +194,7 @@ class _CountdownCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text('PRÓXIMA SESSÃO COMEÇA EM',
+          Text(l.nextSessionStartsIn,
               style: AppTheme.overline(Colors.white.withValues(alpha: 0.6))),
           const SizedBox(height: 18),
           if (n != null) ...[
@@ -222,7 +235,7 @@ class _CountdownCard extends StatelessWidget {
               ],
             ),
           ] else
-            Text('Sem mais sessões por hoje',
+            Text(l.noMoreSessionsToday,
                 style: AppTheme.display(size: 20, color: Colors.white)),
         ],
       ),

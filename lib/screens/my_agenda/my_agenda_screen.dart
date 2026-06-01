@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/mock_data.dart';
 import '../../models/activity.dart';
 import '../../state/app_state.dart';
+import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/activity_card.dart';
 import '../../widgets/app_bar_actions.dart';
+import '../../widgets/data_status.dart';
 import '../agenda/activity_detail_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -19,17 +21,30 @@ class MyAgendaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final favs = MockData.activities
+    final es = context.watch<EventState>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).myAgendaTitle),
+        actions: const [AppBarActions()],
+      ),
+      body: _body(context, state, es),
+    );
+  }
+
+  Widget _body(BuildContext context, AppState state, EventState es) {
+    if (es.status == LoadStatus.error) {
+      return ErrorView(onRetry: es.load);
+    }
+    if (!es.isReady) {
+      return const LoadingView();
+    }
+    final favs = es.activities
         .where((a) => state.isFavorite(a.id))
         .toList()
       ..sort((a, b) => a.start.compareTo(b.start));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Minha Agenda'),
-        actions: const [AppBarActions()],
-      ),
-      body: favs.isEmpty
+    return favs.isEmpty
           ? _EmptyState(onOpenAgenda: onOpenAgenda)
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -39,8 +54,7 @@ class MyAgendaScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 ..._buildByDay(context, favs),
               ],
-            ),
-    );
+            );
   }
 
   List<Widget> _buildByDay(BuildContext context, List<Activity> favs) {
@@ -51,7 +65,7 @@ class MyAgendaScreen extends StatelessWidget {
       widgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10, top: 4),
         child: Text(
-          'DIA $day',
+          AppLocalizations.of(context).dayUpper(day),
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
@@ -85,6 +99,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final muted = AppColors.navy.withValues(alpha: 0.55);
     return Center(
       child: Padding(
@@ -94,13 +109,13 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(LucideIcons.star, size: 52, color: muted),
             const SizedBox(height: 16),
-            const Text(
-              'A tua agenda está vazia',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            Text(
+              l.emptyAgendaTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              'Marca actividades com a estrela na Agenda para as veres aqui e activares lembretes.',
+              l.emptyAgendaBody,
               textAlign: TextAlign.center,
               style: TextStyle(color: muted),
             ),
@@ -108,7 +123,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onOpenAgenda,
               icon: const Icon(LucideIcons.calendarDays, size: 18),
-              label: const Text('Ver agenda'),
+              label: Text(l.seeAgenda),
               style: FilledButton.styleFrom(minimumSize: const Size(200, 50)),
             ),
           ],
@@ -134,17 +149,17 @@ class _LoginHint extends StatelessWidget {
         children: [
           const Icon(LucideIcons.cloudOff, color: AppColors.navy, size: 20),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Os teus favoritos estão guardados neste telemóvel.',
-              style: TextStyle(fontSize: 13),
+              AppLocalizations.of(context).favoritesStoredLocally,
+              style: const TextStyle(fontSize: 13),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             ),
-            child: const Text('Sincronizar'),
+            child: Text(AppLocalizations.of(context).sync),
           ),
         ],
       ),
@@ -185,8 +200,8 @@ class _ConflictBanner extends StatelessWidget {
           Expanded(
             child: Text(
               conflict
-                  ? 'Tens actividades com horários sobrepostos.'
-                  : 'Sem conflitos de horário.',
+                  ? AppLocalizations.of(context).overlapWarning
+                  : AppLocalizations.of(context).noOverlap,
               style: const TextStyle(fontSize: 13),
             ),
           ),

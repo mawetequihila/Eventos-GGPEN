@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 
-import '../../data/mock_data.dart';
 import '../../models/activity.dart';
+import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/data_status.dart';
 import '../../widgets/timeline_tile.dart';
 import 'activity_detail_screen.dart';
 
@@ -18,9 +21,23 @@ class AgendaScreen extends StatefulWidget {
 class _AgendaScreenState extends State<AgendaScreen> {
   int _day = 1;
 
+  String _weekdayLabel(AppLocalizations l, int day) {
+    switch (day) {
+      case 1:
+        return l.weekday1;
+      case 2:
+        return l.weekday2;
+      case 3:
+        return l.weekday3;
+      default:
+        return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final items = MockData.byDay(_day);
+    final l = AppLocalizations.of(context);
+    final es = context.watch<EventState>();
 
     return Scaffold(
       appBar: AppBar(
@@ -28,58 +45,86 @@ class _AgendaScreenState extends State<AgendaScreen> {
           icon: const Icon(LucideIcons.menu, size: 20),
           onPressed: widget.onMenu,
         ),
-        title: const Text('Agenda'),
+        title: Text(l.agendaTitle),
         actions: [
           IconButton(
-            tooltip: 'Procurar',
+            tooltip: l.searchTooltip,
             icon: const Icon(LucideIcons.search, size: 20),
             onPressed: () => showSearch(
               context: context,
-              delegate: _ActivitySearchDelegate(),
+              delegate: _ActivitySearchDelegate(l, es.activities),
             ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Row(
-              children: [
-                for (var d = 1; d <= 3; d++) ...[
-                  Expanded(child: _DayPill(day: d, selected: _day == d, onTap: () => setState(() => _day = d))),
-                  if (d < 3) const SizedBox(width: 8),
-                ],
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-              itemCount: items.length,
-              itemBuilder: (context, i) => TimelineTile(
-                activity: items[i],
-                isFirst: i == 0,
-                isLast: i == items.length - 1,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ActivityDetailScreen(activity: items[i]),
+      body: _body(l, es),
+    );
+  }
+
+  Widget _body(AppLocalizations l, EventState es) {
+    if (es.status == LoadStatus.error) {
+      return ErrorView(onRetry: es.load);
+    }
+    if (!es.isReady) {
+      return const LoadingView();
+    }
+
+    final dayCount = es.dayCount == 0 ? 1 : es.dayCount;
+    if (_day > dayCount) _day = 1;
+    final items = es.byDay(_day);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Row(
+            children: [
+              for (var d = 1; d <= dayCount; d++) ...[
+                Expanded(
+                  child: _DayPill(
+                    dayNumber: es.dateForDay(d)?.day ?? d,
+                    weekday: _weekdayLabel(l, d),
+                    selected: _day == d,
+                    onTap: () => setState(() => _day = d),
                   ),
+                ),
+                if (d < dayCount) const SizedBox(width: 8),
+              ],
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            itemCount: items.length,
+            itemBuilder: (context, i) => TimelineTile(
+              activity: items[i],
+              isFirst: i == 0,
+              isLast: i == items.length - 1,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ActivityDetailScreen(activity: items[i]),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _DayPill extends StatelessWidget {
-  final int day;
+  final int dayNumber;
+  final String weekday;
   final bool selected;
   final VoidCallback onTap;
-  const _DayPill({required this.day, required this.selected, required this.onTap});
+  const _DayPill({
+    required this.dayNumber,
+    required this.weekday,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +145,7 @@ class _DayPill extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  MockData.dayInfo[day]!.weekday,
+                  weekday,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -111,7 +156,7 @@ class _DayPill extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  MockData.dayInfo[day]!.date,
+                  '$dayNumber',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -128,8 +173,12 @@ class _DayPill extends StatelessWidget {
 }
 
 class _ActivitySearchDelegate extends SearchDelegate<Activity?> {
+  final AppLocalizations l;
+  final List<Activity> activities;
+  _ActivitySearchDelegate(this.l, this.activities);
+
   @override
-  String get searchFieldLabel => 'Procurar actividade, local ou orador';
+  String get searchFieldLabel => l.searchHint;
 
   @override
   List<Widget> buildActions(BuildContext context) => [
@@ -155,16 +204,16 @@ class _ActivitySearchDelegate extends SearchDelegate<Activity?> {
   Widget _results(BuildContext context) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) {
-      return const Center(child: Text('Escreve para procurar…'));
+      return Center(child: Text(l.searchPrompt));
     }
-    final results = MockData.activities.where((a) {
+    final results = activities.where((a) {
       return a.title.toLowerCase().contains(q) ||
           a.location.toLowerCase().contains(q) ||
           (a.speaker?.toLowerCase().contains(q) ?? false);
     }).toList();
 
     if (results.isEmpty) {
-      return const Center(child: Text('Nenhum resultado.'));
+      return Center(child: Text(l.noResults));
     }
     return ListView.builder(
       itemCount: results.length,
@@ -173,7 +222,7 @@ class _ActivitySearchDelegate extends SearchDelegate<Activity?> {
         return ListTile(
           leading: Icon(a.type.icon, color: a.type.color, size: 20),
           title: Text(a.title),
-          subtitle: Text('Dia ${a.day} · ${a.timeRange} · ${a.location}'),
+          subtitle: Text(l.searchResultSubtitle(a.day, a.timeRange, a.location)),
           onTap: () {
             close(context, a);
             Navigator.of(context).push(

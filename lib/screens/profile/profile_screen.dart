@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/mock_data.dart';
+import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
+import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/image_banner.dart';
+import '../../widgets/language_selector.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final state = context.watch<AppState>();
+    final es = context.watch<EventState>();
     final muted = AppColors.navy.withValues(alpha: 0.6);
 
     final favCount =
-        MockData.activities.where((a) => state.isFavorite(a.id)).length;
+        es.activities.where((a) => state.isFavorite(a.id)).length;
     final reminderCount =
-        MockData.activities.where((a) => state.isReminder(a.id)).length;
+        es.activities.where((a) => state.isReminder(a.id)).length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil')),
+      appBar: AppBar(title: Text(l.profileTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
@@ -44,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        state.userName ?? 'Visitante',
+                        state.userName ?? l.guestCapitalized,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -53,8 +58,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       Text(
                         state.isLoggedIn
-                            ? 'Sessão iniciada'
-                            : 'A navegar sem sessão',
+                            ? l.sessionActive
+                            : l.browsingNoSession,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
@@ -73,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
                 child: _StatCard(
                   icon: LucideIcons.star,
                   value: '$favCount',
-                  label: 'Favoritos',
+                  label: l.favorites,
                 ),
               ),
               const SizedBox(width: 12),
@@ -81,31 +86,45 @@ class ProfileScreen extends StatelessWidget {
                 child: _StatCard(
                   icon: LucideIcons.bellRing,
                   value: '$reminderCount',
-                  label: 'Lembretes',
+                  label: l.reminders,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: Column(
+              children: [
+                const LanguageTile(),
+                const Divider(height: 1, color: AppColors.line),
+                _ReminderLeadTile(state: state),
+              ],
+            ),
+          ),
           const SizedBox(height: 24),
           if (state.isLoggedIn)
             OutlinedButton.icon(
-              onPressed: () => context.read<AppState>().logout(),
+              onPressed: () => context.read<AppState>().signOut(),
               icon: const Icon(LucideIcons.logOut, size: 18),
-              label: const Text('Terminar sessão'),
+              label: Text(l.logout),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
             )
           else
             FilledButton.icon(
-              onPressed: () => _promptLogin(context),
+              onPressed: () => _signIn(context),
               icon: const Icon(LucideIcons.logIn, size: 18),
-              label: const Text('Iniciar sessão (demo)'),
+              label: Text(l.signInWithGoogleBtn),
             ),
           const SizedBox(height: 10),
           Text(
-            'O login é opcional. Sem sessão, os favoritos ficam guardados '
-            'apenas neste telemóvel.',
+            l.loginOptionalNote,
             style: TextStyle(fontSize: 12, color: muted),
           ),
         ],
@@ -113,35 +132,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _promptLogin(BuildContext context) async {
-    final controller = TextEditingController();
-    final name = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Iniciar sessão (demo)'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'O teu nome',
-            hintText: 'Ex.: Maria Sousa',
-          ),
-          onSubmitted: (v) => Navigator.of(ctx).pop(v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: const Text('Entrar'),
-          ),
-        ],
-      ),
-    );
-    if (name != null && context.mounted) {
-      context.read<AppState>().login(name);
+  Future<void> _signIn(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await context.read<AppState>().signInWithGoogle();
+      // O ecrã reage automaticamente a authChanges quando a sessão é criada.
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
     }
   }
 }
@@ -182,6 +179,82 @@ class _StatCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+String _leadLabel(AppLocalizations l, int minutes) =>
+    minutes == 0 ? l.leadAtStart : l.leadMinutes(minutes);
+
+/// Linha de definição: antecedência com que a app avisa antes de cada sessão.
+class _ReminderLeadTile extends StatelessWidget {
+  final AppState state;
+  const _ReminderLeadTile({required this.state});
+
+  Future<void> _pick(BuildContext context) async {
+    final l = AppLocalizations.of(context);
+    final es = context.read<EventState>();
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(l.reminderLeadTitle,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            for (final m in AppState.leadOptions)
+              ListTile(
+                title: Text(_leadLabel(l, m)),
+                trailing: m == state.reminderLeadMinutes
+                    ? const Icon(LucideIcons.check,
+                        color: AppColors.techBlue, size: 20)
+                    : null,
+                onTap: () {
+                  state.setReminderLeadMinutes(m);
+                  // Reagenda as sessões já marcadas com a nova antecedência.
+                  final reminded = es.activities
+                      .where((a) => state.isReminder(a.id))
+                      .toList();
+                  rescheduleAll(l, reminded, m);
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return ListTile(
+      leading: const Icon(LucideIcons.bellRing, size: 20),
+      title: Text(l.reminderLeadTitle,
+          style: const TextStyle(fontWeight: FontWeight.w500)),
+      subtitle: Text(l.reminderLeadHint,
+          style: TextStyle(
+              fontSize: 11, color: AppColors.navy.withValues(alpha: 0.5))),
+      trailing: Text(
+        _leadLabel(l, state.reminderLeadMinutes),
+        style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppColors.techBlue),
+      ),
+      onTap: () => _pick(context),
     );
   }
 }

@@ -10,18 +10,29 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   cupertino_icons: ^1.0.6
   provider: ^6.1.2
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.5.5
   qr_flutter: ^4.1.0
   lucide_icons_flutter: ^3.1.14+2
   google_fonts: ^8.1.0
+  supabase_flutter: ^2.12.4
+  url_launcher: ^6.3.2
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
+  webview_flutter: ^4.13.1
 dev_dependencies:
   flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/logo_ggpen.png
     - assets/logo_angotic.png
     - assets/banners/
+    - assets/venue/venue_map.html
+    - assets/venue/three.min.js

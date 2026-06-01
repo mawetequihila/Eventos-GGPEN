@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
@@ -54,7 +55,7 @@ class ActivityCard extends StatelessWidget {
                     if (status == ActivityStatus.live) const LiveBadge(),
                     if (status == ActivityStatus.cancelled)
                       Text(
-                        'CANCELADO',
+                        AppLocalizations.of(context).statusCancelled,
                         style: AppTheme.overline(scheme.error),
                       ),
                   ],

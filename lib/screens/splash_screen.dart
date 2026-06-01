@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 
 import '../theme/app_colors.dart';
 import 'home_shell.dart';
@@ -59,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen>
             ),
             const SizedBox(height: 28),
             Text(
-              'Agenda no Angotic 2026',
+              AppLocalizations.of(context).splashTagline,
               style: TextStyle(
                 color: AppColors.navy.withValues(alpha: 0.6),
                 fontSize: 14,

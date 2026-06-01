@@ -26,9 +26,10 @@ class TimelineTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final muted = scheme.onSurface.withValues(alpha: 0.55);
     final status = activity.statusAt(DateTime.now());
-    final nodeColor = status == ActivityStatus.live
-        ? AppColors.live
-        : (status == ActivityStatus.past ? activity.type.color : AppColors.line);
+    // Nó da timeline: cheio na cor da categoria quando já realizada (estado
+    // "concluída"), âmbar a decorrer, e contorno colorido quando ainda por vir.
+    final nodeColor =
+        status == ActivityStatus.live ? AppColors.live : activity.type.color;
     final filled = status == ActivityStatus.live || status == ActivityStatus.past;
 
     return IntrinsicHeight(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 enum ActivityType {
@@ -12,22 +13,22 @@ enum ActivityType {
 }
 
 extension ActivityTypeX on ActivityType {
-  String get label {
+  String label(AppLocalizations l) {
     switch (this) {
       case ActivityType.apresentacao:
-        return 'Apresentação';
+        return l.typeApresentacao;
       case ActivityType.lancamento:
-        return 'Lançamento';
+        return l.typeLancamento;
       case ActivityType.assinatura:
-        return 'Assinatura';
+        return l.typeAssinatura;
       case ActivityType.plenaria:
-        return 'Plenária';
+        return l.typePlenaria;
       case ActivityType.painel:
-        return 'Painel';
+        return l.typePainel;
       case ActivityType.formacao:
-        return 'Formação';
+        return l.typeFormacao;
       case ActivityType.workshop:
-        return 'Workshop';
+        return l.typeWorkshop;
     }
   }
 

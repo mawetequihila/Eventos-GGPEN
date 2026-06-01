@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
@@ -6,16 +7,16 @@ import '../theme/app_colors.dart';
 enum NotificationKind { aviso, mudanca, cancelamento, inicio }
 
 extension NotificationKindX on NotificationKind {
-  String get label {
+  String label(AppLocalizations l) {
     switch (this) {
       case NotificationKind.aviso:
-        return 'Aviso';
+        return l.notifKindNotice;
       case NotificationKind.mudanca:
-        return 'Mudança de horário';
+        return l.notifKindScheduleChange;
       case NotificationKind.cancelamento:
-        return 'Cancelamento';
+        return l.notifKindCancellation;
       case NotificationKind.inicio:
-        return 'A começar';
+        return l.notifKindStarting;
     }
   }
 
@@ -61,13 +62,13 @@ class NotificationItem {
     this.unread = false,
   });
 
-  /// Tempo relativo simples em português (ex.: "há 5 min", "há 2 h").
-  String get relativeTime {
+  /// Tempo relativo localizado (ex.: "há 5 min", "5 min ago").
+  String relativeTime(AppLocalizations l) {
     final diff = DateTime.now().difference(time);
-    if (diff.isNegative) return 'agora';
-    if (diff.inMinutes < 1) return 'agora';
-    if (diff.inMinutes < 60) return 'há ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'há ${diff.inHours} h';
-    return 'há ${diff.inDays} d';
+    if (diff.isNegative) return l.relativeNow;
+    if (diff.inMinutes < 1) return l.relativeNow;
+    if (diff.inMinutes < 60) return l.relativeMinutes(diff.inMinutes);
+    if (diff.inHours < 24) return l.relativeHours(diff.inHours);
+    return l.relativeDays(diff.inDays);
   }
 }

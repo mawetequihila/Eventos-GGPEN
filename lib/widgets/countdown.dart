@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Contagem regressiva até [target]. Usada dentro do banner com gradiente,
@@ -34,15 +35,17 @@ class _CountdownState extends State<Countdown> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final diff = widget.target.difference(DateTime.now());
     if (diff.isNegative) {
       return Row(
-        children: const [
-          Icon(LucideIcons.zap, color: Colors.white, size: 16),
-          SizedBox(width: 6),
+        children: [
+          const Icon(LucideIcons.zap, color: Colors.white, size: 16),
+          const SizedBox(width: 6),
           Text(
-            'O evento está a decorrer',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            l.eventInProgress,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.w700),
           ),
         ],
       );
@@ -53,13 +56,13 @@ class _CountdownState extends State<Countdown> {
     final seconds = diff.inSeconds % 60;
     return Row(
       children: [
-        _unit(days, 'dias'),
+        _unit(days, l.unitDays),
         _sep(),
-        _unit(hours, 'h'),
+        _unit(hours, l.unitHoursShort),
         _sep(),
-        _unit(minutes, 'm'),
+        _unit(minutes, l.unitMinShort),
         _sep(),
-        _unit(seconds, 's'),
+        _unit(seconds, l.unitSecShort),
       ],
     );
   }

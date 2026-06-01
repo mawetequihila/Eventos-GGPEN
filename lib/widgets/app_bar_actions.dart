@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../screens/profile/profile_screen.dart';
@@ -12,7 +13,7 @@ class AppBarActions extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: IconButton(
-        tooltip: 'Perfil',
+        tooltip: AppLocalizations.of(context).profileTooltip,
         icon: const Icon(LucideIcons.user, size: 20),
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const ProfileScreen()),

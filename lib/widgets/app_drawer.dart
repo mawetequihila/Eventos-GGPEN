@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'brand_logo.dart';
+import 'language_selector.dart';
 
 /// Menu lateral com todas as secções. As 4 principais trocam de aba; as
 /// restantes abrem como páginas.
@@ -29,6 +31,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Drawer(
       backgroundColor: Colors.white,
       child: Column(
@@ -51,7 +54,7 @@ class AppDrawer extends StatelessWidget {
                 const BrandImage(asset: AppAssets.ggpen, height: 46),
                 const SizedBox(height: 14),
                 Text(
-                  'Agenda no Angotic 2026',
+                  l.drawerHeaderTitle,
                   style: AppTheme.display(size: 15, weight: FontWeight.w700,
                       color: AppColors.navy),
                 ),
@@ -64,26 +67,30 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                _tab(context, LucideIcons.home, 'Início', 0),
-                _tab(context, LucideIcons.calendar, 'Agenda', 1),
-                _tab(context, LucideIcons.users, 'Oradores', 2),
+                _tab(context, LucideIcons.home, l.navHome, 0),
+                _tab(context, LucideIcons.calendar, l.navAgenda, 1),
+                _tab(context, LucideIcons.users, l.navSpeakers, 2),
                 _tab(context, LucideIcons.satellite, 'GGPEN', 3),
                 const Divider(height: 16, color: AppColors.line),
-                _push(context, LucideIcons.bookmark, 'Minha Agenda', onOpenMinha),
-                _push(context, LucideIcons.bell, 'Notificações', onOpenNotif),
-                _push(context, LucideIcons.map, 'Mapa', onOpenMapa),
-                _push(context, LucideIcons.userCheck, 'Participantes',
+                _push(context, LucideIcons.bookmark, l.drawerMyAgenda,
+                    onOpenMinha),
+                _push(context, LucideIcons.bell, l.drawerNotifications,
+                    onOpenNotif),
+                _push(context, LucideIcons.map, l.drawerMap, onOpenMapa),
+                _push(context, LucideIcons.userCheck, l.drawerParticipants,
                     onOpenParticipantes),
-                _push(context, LucideIcons.user, 'Perfil', onOpenPerfil),
+                _push(context, LucideIcons.user, l.drawerProfile, onOpenPerfil),
+                const Divider(height: 16, color: AppColors.line),
+                const LanguageTile(),
               ],
             ),
           ),
           const Divider(height: 1, color: AppColors.line),
-          const Padding(
-            padding: EdgeInsets.all(16),
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Text(
-              'apresentado por GGPEN',
-              style: TextStyle(fontSize: 11, letterSpacing: 0.5),
+              l.drawerPoweredBy,
+              style: const TextStyle(fontSize: 11, letterSpacing: 0.5),
             ),
           ),
         ],

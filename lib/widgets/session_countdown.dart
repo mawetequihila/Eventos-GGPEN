@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -40,26 +41,40 @@ class _SessionCountdownState extends State<SessionCountdown> {
     final labelColor = base.withValues(alpha: dark ? 0.65 : 0.5);
     final sepColor = base.withValues(alpha: 0.35);
 
+    final l = AppLocalizations.of(context);
     final diff = widget.target.difference(DateTime.now());
     if (diff.isNegative) {
       return Center(
-        child: Text('A decorrer agora',
+        child: Text(l.happeningNow,
             style: AppTheme.display(size: 22, color: AppColors.live)),
       );
     }
-    final h = (diff.inHours).toString().padLeft(2, '0');
-    final m = (diff.inMinutes % 60).toString().padLeft(2, '0');
-    final s = (diff.inSeconds % 60).toString().padLeft(2, '0');
+
+    String two(int n) => n.toString().padLeft(2, '0');
+
+    // A mais de 24h mostra Dias · Horas · Min; no próprio dia mostra Horas · Min · Seg.
+    final List<Widget> units;
+    if (diff.inDays >= 1) {
+      units = [
+        _unit(two(diff.inDays), l.unitDays, base, labelColor),
+        _sep(sepColor),
+        _unit(two(diff.inHours % 24), l.unitHoursLong, base, labelColor),
+        _sep(sepColor),
+        _unit(two(diff.inMinutes % 60), l.unitMinLong, accent, labelColor),
+      ];
+    } else {
+      units = [
+        _unit(two(diff.inHours), l.unitHoursLong, base, labelColor),
+        _sep(sepColor),
+        _unit(two(diff.inMinutes % 60), l.unitMinLong, base, labelColor),
+        _sep(sepColor),
+        _unit(two(diff.inSeconds % 60), l.unitSecLong, accent, labelColor),
+      ];
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        _unit(h, 'horas', base, labelColor),
-        _sep(sepColor),
-        _unit(m, 'min', base, labelColor),
-        _sep(sepColor),
-        _unit(s, 'seg', accent, labelColor),
-      ],
+      children: units,
     );
   }
 

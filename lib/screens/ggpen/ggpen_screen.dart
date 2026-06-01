@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../theme/app_colors.dart';
 import '../../widgets/app_bar_actions.dart';
+import '../../widgets/contacts.dart';
 import '../../widgets/brand_logo.dart';
 import '../../widgets/image_banner.dart';
 import 'location_screen.dart';
@@ -22,6 +24,7 @@ class GgpenScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final muted = AppColors.navy.withValues(alpha: 0.6);
 
     return Scaffold(
@@ -39,11 +42,11 @@ class GgpenScreen extends StatelessWidget {
           ImageBanner(
             image: _bannerImage,
             height: 150,
-            child: const Align(
+            child: Align(
               alignment: Alignment.bottomLeft,
               child: Text(
-                'Programa Espacial Nacional',
-                style: TextStyle(
+                l.spaceProgramTitle,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -59,46 +62,46 @@ class GgpenScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'A GGPEN coordena o Programa Espacial Nacional de Angola, '
-            'colocando tecnologia de satélite ao serviço da conectividade, da '
-            'observação da Terra e da transformação digital do país. No '
-            'Angotic 2026 mostramos o que estamos a construir.',
+            l.ggpenDescription,
             style: TextStyle(fontSize: 14, height: 1.55, color: muted),
           ),
           const SizedBox(height: 24),
-          _Label('No Angotic 2026'),
+          _Label(l.atAngotic),
           const SizedBox(height: 10),
           _LinkTile(
             icon: LucideIcons.calendarDays,
-            title: 'A nossa agenda',
-            subtitle: 'Palestras, demos e networking',
+            title: l.ourAgenda,
+            subtitle: l.ourAgendaSubtitle,
             onTap: onOpenAgenda,
           ),
           const SizedBox(height: 10),
           _LinkTile(
             icon: LucideIcons.mapPin,
-            title: 'Onde estamos',
-            subtitle: 'Stand A · Pavilhão 2',
+            title: l.whereWeAre,
+            subtitle: l.standLabel,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const LocationScreen()),
             ),
           ),
           const SizedBox(height: 24),
-          _Label('Contactos'),
+          _Label(l.contacts),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
-              _ContactIcon(LucideIcons.globe, 'Site'),
-              _ContactIcon(LucideIcons.mail, 'Email'),
-              _ContactIcon(LucideIcons.share2, 'Redes'),
+            children: [
+              _ContactIcon(LucideIcons.globe, l.contactSite,
+                  onTap: () => openExternalUrl(context, GgpenContacts.site)),
+              _ContactIcon(LucideIcons.mail, l.contactEmail,
+                  onTap: () => openEmail(context, GgpenContacts.email)),
+              _ContactIcon(LucideIcons.share2, l.contactSocial,
+                  onTap: () => showSocialLinks(context)),
             ],
           ),
           const SizedBox(height: 28),
-          const Center(
+          Center(
             child: Text(
-              'presente no',
-              style: TextStyle(fontSize: 12, letterSpacing: 1),
+              l.presentAt,
+              style: const TextStyle(fontSize: 12, letterSpacing: 1),
             ),
           ),
           const SizedBox(height: 10),
@@ -195,25 +198,33 @@ class _LinkTile extends StatelessWidget {
 class _ContactIcon extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _ContactIcon(this.icon, this.label);
+  final VoidCallback onTap;
+  const _ContactIcon(this.icon, this.label, {required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            color: AppColors.techBlue.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, color: AppColors.techBlue, size: 22),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.techBlue.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: AppColors.techBlue, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(label,
+                style: TextStyle(color: AppColors.navy.withValues(alpha: 0.6))),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(label,
-            style: TextStyle(color: AppColors.navy.withValues(alpha: 0.6))),
-      ],
+      ),
     );
   }
 }

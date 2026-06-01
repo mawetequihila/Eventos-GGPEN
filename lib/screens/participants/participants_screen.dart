@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../data/mock_data.dart';
@@ -17,6 +18,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final all = MockData.participants;
     final q = _query.trim().toLowerCase();
     final list = q.isEmpty
@@ -30,7 +32,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     final checkedIn = all.where((p) => p.checkedIn).length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Participantes')),
+      appBar: AppBar(title: Text(l.participantsTitle)),
       body: Column(
         children: [
           Padding(
@@ -39,13 +41,13 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
               children: [
                 _StatChip(
                   icon: LucideIcons.users,
-                  label: '${all.length} participantes',
+                  label: l.participantsCount(all.length),
                   color: AppColors.techBlue,
                 ),
                 const SizedBox(width: 10),
                 _StatChip(
                   icon: LucideIcons.userCheck,
-                  label: '$checkedIn check-ins',
+                  label: l.checkinsCount(checkedIn),
                   color: AppColors.live,
                 ),
               ],
@@ -56,7 +58,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
             child: TextField(
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Procurar por nome, empresa ou função',
+                hintText: l.searchParticipantsHint,
                 prefixIcon: const Icon(LucideIcons.search, size: 18),
                 isDense: true,
                 filled: true,
@@ -76,7 +78,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
             child: list.isEmpty
                 ? Center(
                     child: Text(
-                      'Nenhum participante encontrado.',
+                      l.noParticipantsFound,
                       style: TextStyle(
                           color: AppColors.navy.withValues(alpha: 0.55)),
                     ),
@@ -189,14 +191,15 @@ class _ParticipantTile extends StatelessWidget {
                 color: AppColors.live.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(LucideIcons.checkCircle, size: 13, color: AppColors.live),
-                  SizedBox(width: 4),
+                  const Icon(LucideIcons.checkCircle,
+                      size: 13, color: AppColors.live),
+                  const SizedBox(width: 4),
                   Text(
-                    'Check-in',
-                    style: TextStyle(
+                    AppLocalizations.of(context).checkInBadge,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.live,
@@ -207,7 +210,7 @@ class _ParticipantTile extends StatelessWidget {
             )
           else
             Text(
-              'Por confirmar',
+              AppLocalizations.of(context).toConfirm,
               style: TextStyle(
                 fontSize: 11,
                 color: AppColors.navy.withValues(alpha: 0.5),

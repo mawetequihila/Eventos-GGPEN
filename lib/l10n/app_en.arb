@@ -1,0 +1,251 @@
+{
+  "@@locale": "en",
+
+  "navHome": "Home",
+  "navAgenda": "Agenda",
+  "navSpeakers": "Speakers",
+  "drawerMyAgenda": "My Agenda",
+  "drawerNotifications": "Notifications",
+  "drawerMap": "Map",
+  "drawerParticipants": "Participants",
+  "drawerProfile": "Profile",
+  "drawerHeaderTitle": "Agenda at Angotic 2026",
+  "drawerPoweredBy": "presented by GGPEN",
+  "splashTagline": "Agenda at Angotic 2026",
+
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "greetingLine": "{greeting}, {name}",
+  "@greetingLine": {
+    "placeholders": {
+      "greeting": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "guest": "visitor",
+  "liveNow": "Happening now",
+  "noLiveSession": "No session is running right now.",
+  "nextSessionStartsIn": "NEXT SESSION STARTS IN",
+  "noMoreSessionsToday": "No more sessions today",
+  "quickAccess": "Quick access",
+  "shortcutAgenda": "Agenda",
+  "shortcutSaved": "Saved",
+  "shortcutMap": "Map",
+  "todaySchedule": "Today's schedule",
+  "seeAll": "See all →",
+
+  "agendaTitle": "Agenda",
+  "searchTooltip": "Search",
+  "searchHint": "Search activity, location or speaker",
+  "searchPrompt": "Type to search…",
+  "noResults": "No results.",
+  "searchResultSubtitle": "Day {day} · {time} · {location}",
+  "@searchResultSubtitle": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "time": { "type": "String" },
+      "location": { "type": "String" }
+    }
+  },
+  "weekday1": "Thu",
+  "weekday2": "Fri",
+  "weekday3": "Sat",
+
+  "linkCopied": "Link copied (demo)",
+  "tabSpeakers": "Speakers",
+  "tabQa": "Questions",
+  "remindBeforeStart": "Remind me before it starts",
+  "inMyAgenda": "In my agenda",
+  "addToMyAgenda": "Add to my agenda",
+  "noSpeakersForSession": "No speakers assigned to this session.",
+  "speakersUpper": "SPEAKERS",
+  "guestSpeaker": "Guest speaker",
+  "qaHint": "Type your question...",
+  "you": "You",
+
+  "myAgendaTitle": "My Agenda",
+  "emptyAgendaTitle": "Your agenda is empty",
+  "emptyAgendaBody": "Star activities in the Agenda to see them here and turn on reminders.",
+  "seeAgenda": "See agenda",
+  "favoritesStoredLocally": "Your favourites are stored on this phone.",
+  "sync": "Sync",
+  "overlapWarning": "You have activities with overlapping times.",
+  "noOverlap": "No schedule conflicts.",
+  "dayUpper": "DAY {day}",
+  "@dayUpper": {
+    "placeholders": { "day": { "type": "int" } }
+  },
+
+  "spaceProgramTitle": "National Space Programme",
+  "ggpenDescription": "GGPEN coordinates Angola's National Space Programme, putting satellite technology at the service of connectivity, Earth observation and the country's digital transformation. At Angotic 2026 we show what we are building.",
+  "atAngotic": "At Angotic 2026",
+  "ourAgenda": "Our agenda",
+  "ourAgendaSubtitle": "Talks, demos and networking",
+  "whereWeAre": "Where we are",
+  "contacts": "Contacts",
+  "contactSite": "Website",
+  "contactEmail": "Email",
+  "contactSocial": "Social",
+  "presentAt": "present at",
+
+  "standLabel": "Stand A · Pavilion 2",
+  "standNearAuditorium": "Next to Auditorium 1",
+  "howToGet": "How to get there",
+  "howToGetBody": "From the main entrance, follow the central corridor and take the 2nd right. The GGPEN stand is marked with the logo.",
+  "usefulPoints": "Useful points",
+  "pointAuditorium": "Auditorium 1",
+  "pointLounge": "Lounge",
+  "pointCatering": "Catering",
+  "pointParking": "Parking",
+
+  "speakersTitle": "Speakers",
+  "speakersConfirmed": "{count} confirmed",
+  "@speakersConfirmed": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sessionsCount": "{count, plural, =1{1 session} other{{count} sessions}}",
+  "@sessionsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "participantsTitle": "Participants",
+  "participantsCount": "{count} participants",
+  "@participantsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "checkinsCount": "{count} check-ins",
+  "@checkinsCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "searchParticipantsHint": "Search by name, company or role",
+  "noParticipantsFound": "No participant found.",
+  "checkInBadge": "Check-in",
+  "toConfirm": "To confirm",
+
+  "notificationsTitle": "Notifications",
+  "noNotifications": "No notifications right now.",
+
+  "profileTitle": "Profile",
+  "guestCapitalized": "Visitor",
+  "sessionActive": "Signed in",
+  "browsingNoSession": "Browsing without an account",
+  "favorites": "Favourites",
+  "reminders": "Reminders",
+  "logout": "Sign out",
+  "loginDemo": "Sign in (demo)",
+  "loginOptionalNote": "Signing in is optional. Without an account, favourites are stored only on this phone.",
+  "yourName": "Your name",
+  "nameHintEx": "e.g. Maria Sousa",
+  "cancel": "Cancel",
+  "enter": "Enter",
+  "language": "Language",
+
+  "adminTitle": "Admin",
+  "adminOverview": "Overview · updated in real time",
+  "metricParticipants": "Participants",
+  "metricCheckins": "Check-ins",
+  "metricActiveSessions": "Active sessions",
+  "metricCompleted": "Completed",
+  "chartParticipationByTime": "Participation by time",
+  "chartTopSessions": "Most subscribed sessions",
+  "manage": "Manage →",
+  "participantsUpper": "PARTICIPANTS",
+  "statusPresent": "Present",
+  "statusPending": "Pending",
+
+  "statusCancelled": "CANCELLED",
+  "statusLive": "LIVE",
+
+  "typeApresentacao": "Presentation",
+  "typeLancamento": "Launch",
+  "typeAssinatura": "Signing",
+  "typePlenaria": "Plenary",
+  "typePainel": "Panel",
+  "typeFormacao": "Training",
+  "typeWorkshop": "Workshop",
+
+  "happeningNow": "Happening now",
+  "eventInProgress": "The event is in progress",
+  "unitDays": "days",
+  "unitHoursLong": "hours",
+  "unitMinLong": "min",
+  "unitSecLong": "sec",
+  "unitHoursShort": "h",
+  "unitMinShort": "m",
+  "unitSecShort": "s",
+
+  "relativeNow": "now",
+  "relativeMinutes": "{count} min ago",
+  "@relativeMinutes": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "relativeHours": "{count} h ago",
+  "@relativeHours": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "relativeDays": "{count} d ago",
+  "@relativeDays": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "notifKindNotice": "Notice",
+  "notifKindScheduleChange": "Schedule change",
+  "notifKindCancellation": "Cancellation",
+  "notifKindStarting": "Starting",
+
+  "profileTooltip": "Profile",
+  "eventSubtitle": "Angola ICT Forum · On the road to digital transformation",
+
+  "retry": "Retry",
+  "loadError": "Couldn't load data.",
+  "signInWithGoogleBtn": "Sign in with Google",
+  "qaSentPending": "Question sent. Awaiting approval.",
+  "qaLoginRequired": "Sign in with Google to take part.",
+  "noQuestionsYet": "No approved questions yet.",
+  "moderator": "Moderator",
+
+  "aboutSpeaker": "About",
+  "noBio": "No biography available.",
+  "photosTitle": "Photos",
+  "locationSection": "Location",
+  "descriptionTitle": "About this session",
+  "notifWelcomeTitle": "Welcome to Angotic 2026",
+  "notifWelcomeBody": "Explore the agenda and save the sessions you don't want to miss.",
+  "notifStartingSoonTitle": "{title} starts soon",
+  "@notifStartingSoonTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "notifStartingSoonBody": "Starts at {time} · {location}",
+  "@notifStartingSoonBody": {
+    "placeholders": {
+      "time": { "type": "String" },
+      "location": { "type": "String" }
+    }
+  },
+  "noPhotos": "No photos yet.",
+
+  "reminderLeadTitle": "Reminder lead time",
+  "reminderLeadHint": "When to alert you before a session starts",
+  "leadAtStart": "At start",
+  "leadMinutes": "{count} min",
+  "@leadMinutes": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "notifLiveTitle": "{title} is live",
+  "@notifLiveTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "notifLiveBody": "Now · {location}",
+  "@notifLiveBody": {
+    "placeholders": { "location": { "type": "String" } }
+  },
+
+  "qaEdit": "Edit",
+  "qaDelete": "Delete",
+  "qaDeleteConfirm": "Delete this question?",
+  "qaPending": "Pending",
+  "qaEditTitle": "Edit question",
+  "qaSave": "Save",
+  "qaDeleted": "Question deleted."
+}

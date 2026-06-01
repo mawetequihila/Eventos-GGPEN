@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 
 import '../models/activity.dart';
 import '../theme/app_colors.dart';
@@ -21,7 +22,7 @@ class TypeLabel extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          type.label.toUpperCase(),
+          type.label(AppLocalizations.of(context)).toUpperCase(),
           style: TextStyle(
             color: c,
             fontSize: 11,
@@ -40,10 +41,10 @@ class LiveBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
+        const SizedBox(
           width: 8,
           height: 8,
           child: DecoratedBox(
@@ -53,10 +54,10 @@ class LiveBadge extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: 6),
+        const SizedBox(width: 6),
         Text(
-          'EM CURSO',
-          style: TextStyle(
+          AppLocalizations.of(context).statusLive,
+          style: const TextStyle(
             color: AppColors.live,
             fontSize: 10,
             fontWeight: FontWeight.w800,

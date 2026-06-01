@@ -5,12 +5,18 @@ class Speaker {
   final String role;
   final int sessions;
   final Color color;
+  final String? id;
+  final String? bio;
+  final String? avatarUrl;
 
   const Speaker({
     required this.name,
     required this.role,
     required this.sessions,
     required this.color,
+    this.id,
+    this.bio,
+    this.avatarUrl,
   });
 
   String get initials {
