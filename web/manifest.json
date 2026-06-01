@@ -1,11 +1,11 @@
 {
-    "name": "ggpen_angotic",
-    "short_name": "ggpen_angotic",
+    "name": "GGPEN · Angotic 2026",
+    "short_name": "GGPEN Angotic",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#0E1B3D",
-    "description": "A new Flutter project.",
+    "description": "Guia oficial dos eventos do GGPEN — Angotic 2026.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
