@@ -567,4 +567,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get qaDeleted => 'Question supprimée.';
+
+  @override
+  String get speakerSessions => 'Sessions';
 }

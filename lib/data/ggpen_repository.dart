@@ -87,6 +87,21 @@ class GgpenRepository {
     return Activity.fromMap(row);
   }
 
+  /// Sessões em que um orador participa (para a ficha do orador).
+  Future<List<Activity>> getSpeakerSessions(String speakerId) async {
+    final rows = await _db
+        .from('activity_speakers')
+        .select('activities(*)')
+        .eq('speaker_id', speakerId);
+    final list = <Activity>[];
+    for (final r in rows) {
+      final a = r['activities'];
+      if (a is Map<String, dynamic>) list.add(Activity.fromMap(a));
+    }
+    list.sort((x, y) => x.inicio.compareTo(y.inicio));
+    return list;
+  }
+
   /// Oradores + moderadores de uma atividade (embedding da tabela speakers).
   Future<List<Speaker>> getSpeakers(String activityId) async {
     final rows = await _db

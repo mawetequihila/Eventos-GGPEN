@@ -563,4 +563,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qaDeleted => 'Question deleted.';
+
+  @override
+  String get speakerSessions => 'Sessions';
 }

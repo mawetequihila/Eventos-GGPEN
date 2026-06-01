@@ -563,4 +563,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get qaDeleted => 'Dúvida eliminada.';
+
+  @override
+  String get speakerSessions => 'Sessões';
 }

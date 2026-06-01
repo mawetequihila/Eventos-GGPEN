@@ -192,5 +192,6 @@
   "qaPending": "Pendente",
   "qaEditTitle": "Editar dúvida",
   "qaSave": "Guardar",
-  "qaDeleted": "Dúvida eliminada."
+  "qaDeleted": "Dúvida eliminada.",
+  "speakerSessions": "Sessões"
 }

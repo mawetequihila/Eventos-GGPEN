@@ -1127,6 +1127,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Question deleted.'**
   String get qaDeleted;
+
+  /// No description provided for @speakerSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get speakerSessions;
 }
 
 class _AppLocalizationsDelegate

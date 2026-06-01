@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../data/ggpen_models.dart' as sb;
 import '../../data/ggpen_repository.dart';
 import '../../models/activity.dart';
+import '../../models/speaker.dart';
 import '../../services/notification_service.dart';
 import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
@@ -15,6 +16,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/data_status.dart';
 import '../../widgets/image_banner.dart';
+import '../../widgets/speaker_detail.dart';
 import '../../widgets/type_chip.dart';
 import '../ggpen/location_screen.dart';
 
@@ -118,13 +120,13 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: _LocationTile(location: activity.location),
             ),
-          // Abas
+          // Abas — Fotos primeiro (aberto por defeito).
           Container(
             color: Colors.white,
             child: Row(
               children: [
-                _TabBtn(l.tabSpeakers, 0, _tab, (i) => setState(() => _tab = i)),
-                _TabBtn(l.photosTitle, 1, _tab, (i) => setState(() => _tab = i)),
+                _TabBtn(l.photosTitle, 0, _tab, (i) => setState(() => _tab = i)),
+                _TabBtn(l.tabSpeakers, 1, _tab, (i) => setState(() => _tab = i)),
                 _TabBtn(l.tabQa, 2, _tab, (i) => setState(() => _tab = i)),
               ],
             ),
@@ -134,8 +136,8 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
             child: IndexedStack(
               index: _tab,
               children: [
-                _SpeakersTab(activity: activity, muted: muted),
                 _PhotosTab(activityId: activity.id, muted: muted),
+                _SpeakersTab(activity: activity, muted: muted),
                 _QaTab(activityId: activity.id, muted: muted),
               ],
             ),
@@ -303,37 +305,63 @@ class _SpeakerCard extends StatelessWidget {
     final org = speaker.organizacao?.trim() ?? '';
     final base = org.isEmpty ? l.guestSpeaker : org;
     final role = speaker.papel == 'moderador' ? '${l.moderator} · $base' : base;
+    final hasPhoto = (speaker.avatarUrl ?? '').isNotEmpty;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: color,
-            child: Text(_initialsOf(speaker.nome),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14)),
+    void openDetail() => showSpeakerDetail(
+          context,
+          Speaker(
+            id: speaker.id,
+            name: speaker.nome,
+            role: org,
+            bio: speaker.bio,
+            avatarUrl: speaker.avatarUrl,
+            sessions: 0,
+            color: color,
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(speaker.nome, style: AppTheme.cardTitle()),
-                const SizedBox(height: 2),
-                Text(role, style: AppTheme.meta(muted)),
-              ],
-            ),
+        );
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: openDetail,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.line),
           ),
-        ],
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: color,
+                backgroundImage: hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
+                child: hasPhoto
+                    ? null
+                    : Text(_initialsOf(speaker.nome),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(speaker.nome, style: AppTheme.cardTitle()),
+                    const SizedBox(height: 2),
+                    Text(role, style: AppTheme.meta(muted)),
+                  ],
+                ),
+              ),
+              Icon(LucideIcons.chevronRight,
+                  size: 18, color: AppColors.navy.withValues(alpha: 0.35)),
+            ],
+          ),
+        ),
       ),
     );
   }

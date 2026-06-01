@@ -192,5 +192,6 @@
   "qaPending": "قيد المراجعة",
   "qaEditTitle": "تعديل السؤال",
   "qaSave": "حفظ",
-  "qaDeleted": "تم حذف السؤال."
+  "qaDeleted": "تم حذف السؤال.",
+  "speakerSessions": "الجلسات"
 }

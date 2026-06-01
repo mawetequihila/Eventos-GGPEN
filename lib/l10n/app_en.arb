@@ -247,5 +247,6 @@
   "qaPending": "Pending",
   "qaEditTitle": "Edit question",
   "qaSave": "Save",
-  "qaDeleted": "Question deleted."
+  "qaDeleted": "Question deleted.",
+  "speakerSessions": "Sessions"
 }

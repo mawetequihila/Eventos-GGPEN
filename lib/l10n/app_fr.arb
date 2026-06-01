@@ -192,5 +192,6 @@
   "qaPending": "En attente",
   "qaEditTitle": "Modifier la question",
   "qaSave": "Enregistrer",
-  "qaDeleted": "Question supprimée."
+  "qaDeleted": "Question supprimée.",
+  "speakerSessions": "Sessions"
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/activity.dart';
 import '../../models/notification_item.dart';
+import '../../state/app_state.dart';
 import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_bar_actions.dart';
@@ -11,43 +12,43 @@ import '../../widgets/app_bar_actions.dart';
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
-  /// Notificações da app: por defeito só as boas-vindas. Depois surgem as
-  /// sessões a decorrer agora e as que começam em breve (60 min antes).
-  List<NotificationItem> _buildItems(AppLocalizations l, EventState es) {
+  /// Notificações da app. Cada entrada usa a hora REAL em que o aviso "disparou"
+  /// — o lembrete dispara em (início − antecedência); o "a decorrer" no início —
+  /// para o tempo relativo ("há X min") ficar correto.
+  List<NotificationItem> _buildItems(
+      AppLocalizations l, EventState es, int leadMinutes) {
     final now = DateTime.now();
+    final lead = Duration(minutes: leadMinutes);
     final items = <NotificationItem>[];
 
     if (es.isReady) {
-      // A decorrer agora.
-      final live = es.activities
-          .where((a) => a.statusAt(now) == ActivityStatus.live)
-          .toList()
-        ..sort((a, b) => a.start.compareTo(b.start));
-      for (final a in live) {
-        items.add(NotificationItem(
-          title: l.notifLiveTitle(a.title),
-          body: l.notifLiveBody(a.location),
-          time: a.start,
-          kind: NotificationKind.inicio,
-          unread: true,
-        ));
+      for (final a in es.activities) {
+        final status = a.statusAt(now);
+        if (status == ActivityStatus.live) {
+          // Disparou no início da sessão.
+          items.add(NotificationItem(
+            title: l.notifLiveTitle(a.title),
+            body: l.notifLiveBody(a.location),
+            time: a.start,
+            kind: NotificationKind.inicio,
+            unread: true,
+          ));
+        } else {
+          final fire = a.start.subtract(lead);
+          // Só aparece depois de o lembrete ter disparado e antes de começar.
+          if (!now.isBefore(fire) && now.isBefore(a.start)) {
+            items.add(NotificationItem(
+              title: l.notifStartingSoonTitle(a.title),
+              body: l.notifStartingSoonBody(a.timeRange, a.location),
+              time: fire,
+              kind: NotificationKind.inicio,
+              unread: true,
+            ));
+          }
+        }
       }
-
-      // A começar em breve (próximos 60 min).
-      final soon = es.activities.where((a) {
-        final diff = a.start.difference(now);
-        return !diff.isNegative && diff.inMinutes <= 60;
-      }).toList()
-        ..sort((a, b) => a.start.compareTo(b.start));
-      for (final a in soon) {
-        items.add(NotificationItem(
-          title: l.notifStartingSoonTitle(a.title),
-          body: l.notifStartingSoonBody(a.timeRange, a.location),
-          time: now,
-          kind: NotificationKind.inicio,
-          unread: true,
-        ));
-      }
+      // Mais recentes primeiro.
+      items.sort((x, y) => y.time.compareTo(x.time));
     }
 
     // Boas-vindas — sempre presente, no fundo da lista.
@@ -65,7 +66,8 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final es = context.watch<EventState>();
-    final items = _buildItems(l, es);
+    final lead = context.watch<AppState>().reminderLeadMinutes;
+    final items = _buildItems(l, es, lead);
 
     return Scaffold(
       appBar: AppBar(

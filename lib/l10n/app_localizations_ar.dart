@@ -562,4 +562,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get qaDeleted => 'تم حذف السؤال.';
+
+  @override
+  String get speakerSessions => 'الجلسات';
 }

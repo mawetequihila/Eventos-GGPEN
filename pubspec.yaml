@@ -26,6 +26,7 @@ dependencies:
   webview_flutter: ^4.13.1
 dev_dependencies:
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -36,3 +37,18 @@ flutter:
     - assets/banners/
     - assets/venue/venue_map.html
     - assets/venue/three.min.js
+    - assets/promo1.png
+    - assets/promo2.png
+
+# Ícone da app (Android + web) gerado a partir da logo GGPEN.
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  image_path: "assets/logo_ggpen.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/logo_ggpen.png"
+  web:
+    generate: true
+    image_path: "assets/logo_ggpen.png"
+    background_color: "#FFFFFF"
+    theme_color: "#0E1B3D"
