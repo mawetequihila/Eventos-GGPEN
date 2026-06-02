@@ -1239,8 +1239,20 @@ abstract class AppLocalizations {
   /// No description provided for @signupTermsLink.
   ///
   /// In en, this message translates to:
-  /// **'terms of use and data processing'**
+  /// **'Terms of Use'**
   String get signupTermsLink;
+
+  /// No description provided for @signupTermsAnd.
+  ///
+  /// In en, this message translates to:
+  /// **' and the '**
+  String get signupTermsAnd;
+
+  /// No description provided for @signupPrivacyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get signupPrivacyLink;
 
   /// No description provided for @signupTermsSuffix.
   ///
@@ -1287,14 +1299,26 @@ abstract class AppLocalizations {
   /// No description provided for @termsDialogTitle.
   ///
   /// In en, this message translates to:
-  /// **'Terms of use and data processing'**
+  /// **'Terms of Use'**
   String get termsDialogTitle;
 
   /// No description provided for @termsBody.
   ///
   /// In en, this message translates to:
-  /// **'By creating an account, you authorise GGPEN to use your data (name, email, phone, company and role) to send you information related to Angotic 2026, agenda updates, session reminders and future communications — including advertising and marketing content related to the National Space Programme and its partners.\n\nWe do not share your data with third parties without your consent. You may request data removal at any time by contacting geral@ggpen.gov.ao.'**
+  /// **'By using the GGPEN · Angotic 2026 app you accept these Terms of Use. The App is the official guide to GGPEN events.\n\nYour account: provide accurate information and keep your access secure. You are responsible for activity on your account.\n\nParticipation and questions: you are responsible for the content you post. Offensive, illegal, defamatory, misleading or spam content is prohibited. Questions are moderated and GGPEN may reject or remove them. By submitting, you authorise GGPEN to display your content in the context of the event.\n\nBrand and content: the GGPEN/Angotic brand, logos and materials are property of GGPEN and may not be used without authorisation.\n\nService: provided as is and may be changed or interrupted. GGPEN is not liable for unavailability or for content submitted by users.\n\nData: the processing of your data is governed by the Privacy Policy.\n\nGoverning law: the laws of the Republic of Angola.\n\nChanges: we may update these Terms; continued use implies acceptance.\n\nContact: geral@ggpen.gov.ao'**
   String get termsBody;
+
+  /// No description provided for @privacyDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyDialogTitle;
+
+  /// No description provided for @privacyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The National Space Programme Management Office (GGPEN) is the controller of your data in this app.\n\nData collected: when you sign in with Google, your name, email and avatar; the details you provide (phone, company, role); and the questions and likes you submit. Favourites, reminders and language stay only on your device. We do not collect location.\n\nPurposes: to authenticate your session, show the agenda and manage your participation, send reminders and Angotic 2026 information, and communications from GGPEN and partners.\n\nSharing: we use Supabase to host the data on behalf of GGPEN, and Google only for sign-in. We do not sell your data.\n\nSecurity: encrypted connections and per-user access; questions only become public after approval.\n\nYour rights: you can access, correct and delete your data, and request account deletion, via geral@ggpen.gov.ao.\n\nGGPEN — Complexo Administrativo Clássicos de Talatona, Rua do MAT, Edifício n.º 3, 6.º andar, Belas — Luanda, Angola. Tel.: +244 222 777 312.'**
+  String get privacyBody;
 
   /// No description provided for @termsDialogClose.
   ///

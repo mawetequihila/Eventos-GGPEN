@@ -14,7 +14,7 @@ class GgpenAngoticApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final locale = context.watch<AppState>().locale;
     return MaterialApp(
-      title: 'GGPEN · Angotic 2026',
+      title: 'GGPEN App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme(),
       locale: locale,

@@ -6,9 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ggpen_angotic"
+    namespace = "ggpen.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Versão exigida pelos plugins (são retrocompatíveis).
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         // Necessário para flutter_local_notifications (agendamento de notificações).
@@ -19,7 +20,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.ggpen_angotic"
+        applicationId = "ggpen.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -33,6 +34,10 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Desliga o R8/minify (evita exigir proguard-rules.pro e impede que
+            // o shrinker remova classes usadas por reflexão: Supabase/WebView).
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

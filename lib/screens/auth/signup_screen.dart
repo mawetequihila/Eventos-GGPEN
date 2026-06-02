@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../state/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/legal.dart';
 
 /// Inscrição manual: nome, email, telefone, empresa, cargo + termos.
 /// Persistido apenas localmente (SharedPreferences) via [AppState.signUpLocal].
@@ -219,7 +220,8 @@ class _SignupScreenState extends State<SignupScreen> {
                             value: _acceptedTerms,
                             onChanged: (v) =>
                                 setState(() => _acceptedTerms = v ?? false),
-                            onTapTerms: () => _showTerms(context, l),
+                            onTapTerms: () => showTermsDialog(context),
+                            onTapPrivacy: () => showPrivacyDialog(context),
                           ),
                           const SizedBox(height: 20),
                           FilledButton(
@@ -285,67 +287,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Future<void> _showTerms(BuildContext context, AppLocalizations l) {
-    return showDialog<void>(
-      context: context,
-      barrierColor: AppColors.navy.withValues(alpha: 0.55),
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.white,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        clipBehavior: Clip.antiAlias,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxWidth: 480,
-              maxHeight: MediaQuery.of(context).size.height * 0.78),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 8, 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(l.termsDialogTitle,
-                          style: AppTheme.cardTitle()),
-                    ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.x, size: 18),
-                      onPressed: () => Navigator.of(ctx).pop(),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1, color: AppColors.line),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                  child: Text(
-                    l.termsBody,
-                    style: TextStyle(
-                        fontSize: 14,
-                        height: 1.55,
-                        color: AppColors.navy.withValues(alpha: 0.75)),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: FilledButton(
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                  child: Text(l.termsDialogClose),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _Field extends StatelessWidget {
@@ -412,11 +353,13 @@ class _TermsCheckbox extends StatelessWidget {
   final bool value;
   final ValueChanged<bool?> onChanged;
   final VoidCallback onTapTerms;
+  final VoidCallback onTapPrivacy;
 
   const _TermsCheckbox({
     required this.value,
     required this.onChanged,
     required this.onTapTerms,
+    required this.onTapPrivacy,
   });
 
   @override
@@ -446,36 +389,52 @@ class _TermsCheckbox extends StatelessWidget {
               GestureDetector(
                 onTap: () => onChanged(!value),
                 child: Text(
-                  '${l.signupTermsPrefix}${l.signupTermsLink}${l.signupTermsSuffix}',
+                  '${l.signupTermsPrefix}${l.signupTermsLink}${l.signupTermsAnd}${l.signupPrivacyLink}${l.signupTermsSuffix}',
                   style: TextStyle(
                       fontSize: 13,
                       height: 1.45,
                       color: AppColors.navy.withValues(alpha: 0.8)),
                 ),
-              ),
+                ),
               const SizedBox(height: 2),
-              TextButton(
-                onPressed: onTapTerms,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 28),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  alignment: Alignment.centerLeft,
-                  foregroundColor: AppColors.techBlue,
-                ),
-                child: Text(
-                  l.signupTermsLink,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
+              Wrap(
+                spacing: 16,
+                children: [
+                  _LegalLink(label: l.signupTermsLink, onTap: onTapTerms),
+                  _LegalLink(label: l.signupPrivacyLink, onTap: onTapPrivacy),
+                ],
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LegalLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _LegalLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onTap,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: const Size(0, 28),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        foregroundColor: AppColors.techBlue,
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          decoration: TextDecoration.underline,
+        ),
+      ),
     );
   }
 }

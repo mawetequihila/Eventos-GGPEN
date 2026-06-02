@@ -9,6 +9,7 @@ import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/image_banner.dart';
 import '../../widgets/language_selector.dart';
+import '../../widgets/legal.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -102,6 +103,24 @@ class ProfileScreen extends StatelessWidget {
                 const LanguageTile(),
                 const Divider(height: 1, color: AppColors.line),
                 _ReminderLeadTile(state: state),
+                const Divider(height: 1, color: AppColors.line),
+                ListTile(
+                  leading: const Icon(LucideIcons.fileText, size: 20),
+                  title: Text(l.termsDialogTitle,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  trailing: Icon(LucideIcons.chevronRight,
+                      size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
+                  onTap: () => showTermsDialog(context),
+                ),
+                const Divider(height: 1, color: AppColors.line),
+                ListTile(
+                  leading: const Icon(LucideIcons.shieldCheck, size: 20),
+                  title: Text(l.privacyDialogTitle,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  trailing: Icon(LucideIcons.chevronRight,
+                      size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
+                  onTap: () => showPrivacyDialog(context),
+                ),
               ],
             ),
           ),

@@ -22,6 +22,7 @@ class AppState extends ChangeNotifier {
   static const _kLocale = 'locale';
   static const _kLeadMinutes = 'reminderLeadMinutes';
   static const _kLocalProfile = 'localProfile';
+  static const _kProfileComplete = 'profileComplete';
 
   /// Opções de antecedência do lembrete (minutos antes de começar).
   static const List<int> leadOptions = [0, 5, 10, 15, 30];
@@ -56,6 +57,8 @@ class AppState extends ChangeNotifier {
   Map<String, dynamic>? _profile;
   bool _profileChecked = false;
   bool _profileDismissed = false;
+  // Cache local: perfil já completo → entra direto, sem esperar pela rede.
+  bool _profileCompleteCached = false;
 
   SharedPreferences? _prefs;
   StreamSubscription<AuthState>? _authSub;
@@ -97,7 +100,8 @@ class AppState extends ChangeNotifier {
   /// Estado da sessão para o AuthGate decidir o ecrã raiz.
   AuthStatus get authStatus {
     if (_repo.isLoggedIn) {
-      if (_profileDismissed) return AuthStatus.ready;
+      // Caminho rápido: já sabemos que o perfil está completo → entra direto.
+      if (_profileDismissed || _profileCompleteCached) return AuthStatus.ready;
       if (!_profileChecked) return AuthStatus.checking;
       return _profileNeedsCompletion
           ? AuthStatus.needsProfile
@@ -135,6 +139,7 @@ class AppState extends ChangeNotifier {
       _locale = Locale(code);
     }
     _reminderLeadMinutes = prefs.getInt(_kLeadMinutes) ?? 15;
+    _profileCompleteCached = prefs.getBool(_kProfileComplete) ?? false;
     final profileStr = prefs.getString(_kLocalProfile);
     if (profileStr != null && profileStr.isNotEmpty) {
       try {
@@ -222,11 +227,18 @@ class AppState extends ChangeNotifier {
   /// Lê o perfil do Supabase (após login Google) para saber se faltam dados.
   Future<void> _checkProfile() async {
     try {
-      _profile = await _repo.getMyProfile();
+      // Timeout para nunca pendurar o arranque em rede lenta.
+      _profile =
+          await _repo.getMyProfile().timeout(const Duration(seconds: 6));
     } catch (_) {
       _profile = null;
     } finally {
       _profileChecked = true;
+      // Se já está completo, memoriza para os próximos arranques serem instantâneos.
+      if (_profile != null && !_profileNeedsCompletion) {
+        _profileCompleteCached = true;
+        _prefs?.setBool(_kProfileComplete, true);
+      }
       notifyListeners();
     }
   }
@@ -263,6 +275,8 @@ class AppState extends ChangeNotifier {
     _profile = null;
     _profileChecked = false;
     _profileDismissed = false;
+    _profileCompleteCached = false;
+    await _prefs?.remove(_kProfileComplete);
     notifyListeners();
   }
 

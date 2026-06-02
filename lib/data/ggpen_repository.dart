@@ -22,7 +22,7 @@ class GgpenRepository {
     await _db.auth.signInWithOAuth(
       OAuthProvider.google,
       // Na web volta sozinho; em mobile precisa de um deep link configurado.
-      redirectTo: kIsWeb ? null : 'io.ggpen.app://login-callback/',
+      redirectTo: kIsWeb ? null : 'ggpen.app://login-callback/',
     );
   }
 

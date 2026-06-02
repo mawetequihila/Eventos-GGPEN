@@ -625,8 +625,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get signupTermsPrefix => 'J\'accepte les ';
 
   @override
-  String get signupTermsLink =>
-      'conditions d\'utilisation et le traitement des données';
+  String get signupTermsLink => 'Conditions d\'utilisation';
+
+  @override
+  String get signupTermsAnd => ' et la ';
+
+  @override
+  String get signupPrivacyLink => 'Politique de confidentialité';
 
   @override
   String get signupTermsSuffix => '.';
@@ -651,12 +656,18 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vous devez accepter les conditions pour continuer.';
 
   @override
-  String get termsDialogTitle =>
-      'Conditions d\'utilisation et traitement des données';
+  String get termsDialogTitle => 'Conditions d\'utilisation';
 
   @override
   String get termsBody =>
-      'En créant un compte, vous autorisez la GGPEN à utiliser vos données (nom, email, téléphone, entreprise et fonction) pour vous envoyer des informations sur Angotic 2026, des mises à jour du programme, des rappels de sessions et de futures communications — y compris du contenu publicitaire et marketing lié au Programme Spatial National et à ses partenaires.\n\nNous ne partageons pas vos données avec des tiers sans votre consentement. Vous pouvez demander la suppression de vos données à tout moment en contactant geral@ggpen.gov.ao.';
+      'En utilisant l\'application GGPEN · Angotic 2026, vous acceptez ces Conditions d\'utilisation. L\'App est le guide officiel des événements du GGPEN.\n\nVotre compte : fournissez des informations exactes et protégez votre accès. Vous êtes responsable de l\'activité sur votre compte.\n\nParticipation et questions : vous êtes responsable du contenu que vous publiez. Tout contenu offensant, illégal, diffamatoire, trompeur ou de type spam est interdit. Les questions sont modérées et le GGPEN peut les rejeter ou les supprimer. En soumettant, vous autorisez le GGPEN à afficher votre contenu dans le cadre de l\'événement.\n\nMarque et contenus : la marque GGPEN/Angotic, les logos et les supports sont la propriété du GGPEN et ne peuvent être utilisés sans autorisation.\n\nService : fourni en l\'état et susceptible d\'être modifié ou interrompu. Le GGPEN n\'est pas responsable des indisponibilités ni des contenus soumis par les utilisateurs.\n\nDonnées : le traitement de vos données est régi par la Politique de confidentialité.\n\nDroit applicable : la législation de la République d\'Angola.\n\nModifications : nous pouvons mettre à jour ces Conditions ; l\'utilisation continue vaut acceptation.\n\nContact : geral@ggpen.gov.ao';
+
+  @override
+  String get privacyDialogTitle => 'Politique de confidentialité';
+
+  @override
+  String get privacyBody =>
+      'Le Bureau de gestion du Programme spatial national (GGPEN) est le responsable du traitement de vos données dans cette application.\n\nDonnées collectées : lors de la connexion avec Google, votre nom, e-mail et avatar ; les informations que vous fournissez (téléphone, entreprise, fonction) ; et les questions et mentions j\'aime que vous soumettez. Favoris, rappels et langue restent uniquement sur votre appareil. Nous ne collectons pas la localisation.\n\nFinalités : authentifier votre session, afficher le programme et gérer votre participation, envoyer des rappels et des informations sur Angotic 2026, ainsi que des communications du GGPEN et de ses partenaires.\n\nPartage : nous utilisons Supabase pour héberger les données pour le compte du GGPEN, et Google uniquement pour la connexion. Nous ne vendons pas vos données.\n\nSécurité : connexions chiffrées et accès par utilisateur ; les questions ne deviennent publiques qu\'après approbation.\n\nVos droits : vous pouvez accéder à vos données, les corriger et les supprimer, et demander la suppression du compte, via geral@ggpen.gov.ao.\n\nGGPEN — Complexo Administrativo Clássicos de Talatona, Rua do MAT, Edifício n.º 3, 6.º andar, Belas — Luanda, Angola. Tél. : +244 222 777 312.';
 
   @override
   String get termsDialogClose => 'Fermer';

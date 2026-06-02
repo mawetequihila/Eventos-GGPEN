@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
-    Timer(const Duration(milliseconds: 2200), () {
+    Timer(const Duration(milliseconds: 1200), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const AuthGate()),

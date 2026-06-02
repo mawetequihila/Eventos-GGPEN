@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,8 +18,9 @@ Future<void> main() async {
     anonKey: 'sb_publishable_CWUmVOhFQKOaVoKT_J-mmg_aDDoUGK8',
   );
 
-  // Notificações locais (telemóvel). No-op na web.
-  await NotificationService.instance.init();
+  // Notificações locais (telemóvel). NÃO esperar: a init pode mostrar o pedido
+  // de permissão e bloquearia o arranque até o utilizador responder.
+  unawaited(NotificationService.instance.init());
 
   final repo = GgpenRepository();
 

@@ -1,4 +1,4 @@
-package com.example.ggpen_angotic
+package ggpen.app
 
 import io.flutter.embedding.android.FlutterActivity
 
