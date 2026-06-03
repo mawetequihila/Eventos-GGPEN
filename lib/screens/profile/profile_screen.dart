@@ -7,12 +7,22 @@ import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
 import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/image_banner.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/language_selector.dart';
 import '../../widgets/legal.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  String _initials(String? name) {
+    final n = (name ?? '').trim();
+    if (n.isEmpty) return '?';
+    final p = n.split(RegExp(r'\s+'));
+    if (p.length == 1) {
+      return p.first.substring(0, p.first.length >= 2 ? 2 : 1).toUpperCase();
+    }
+    return (p.first[0] + p.last[0]).toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,60 +35,41 @@ class ProfileScreen extends StatelessWidget {
     final reminderCount =
         es.activities.where((a) => state.isReminder(a.id)).length;
 
+    // Campos do perfil — vêm do perfil local (formulário) OU do Supabase (Google).
+    final email = state.userEmail;
+    final phone = state.localProfile?['phone'] ?? state.profilePhone;
+    final company =
+        state.localProfile?['company'] ?? state.profileCompany;
+    final role = state.localProfile?['role'] ?? state.profileRole;
+
+    final hasPersonalInfo = _nonEmpty(email) ||
+        _nonEmpty(phone) ||
+        _nonEmpty(company) ||
+        _nonEmpty(role);
+
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(title: Text(l.profileTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          ImageBanner(
-            image: 'assets/banners/perfil.jpg',
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white.withValues(alpha: 0.22),
-                  child: Icon(
-                    state.isLoggedIn ? LucideIcons.user : LucideIcons.userCheck,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.userName ?? l.guestCapitalized,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        state.isLoggedIn
-                            ? l.sessionActive
-                            : l.browsingNoSession,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          // ---- Header com avatar de iniciais ----
+          _HeaderCard(
+            initials: _initials(state.userName),
+            name: state.userName ?? l.guestCapitalized,
+            email: email,
           ),
           const SizedBox(height: 16),
+
+          // ---- Estatísticas ----
           Row(
             children: [
               Expanded(
                 child: _StatCard(
-                  icon: LucideIcons.star,
+                  icon: LucideIcons.bookmark,
                   value: '$favCount',
                   label: l.favorites,
+                  color: AppColors.techBlue,
                 ),
               ),
               const SizedBox(width: 12),
@@ -87,50 +78,230 @@ class ProfileScreen extends StatelessWidget {
                   icon: LucideIcons.bellRing,
                   value: '$reminderCount',
                   label: l.reminders,
+                  color: AppColors.live,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.line),
-            ),
-            child: Column(
+
+          // ---- Secção: Informação pessoal ----
+          if (hasPersonalInfo) ...[
+            const SizedBox(height: 24),
+            _SectionLabel(l.profileSectionPersonal),
+            const SizedBox(height: 10),
+            _Card(
               children: [
-                const LanguageTile(),
-                const Divider(height: 1, color: AppColors.line),
-                _ReminderLeadTile(state: state),
-                const Divider(height: 1, color: AppColors.line),
-                ListTile(
-                  leading: const Icon(LucideIcons.fileText, size: 20),
-                  title: Text(l.termsDialogTitle,
-                      style: const TextStyle(fontWeight: FontWeight.w500)),
-                  trailing: Icon(LucideIcons.chevronRight,
-                      size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
-                  onTap: () => showTermsDialog(context),
-                ),
-                const Divider(height: 1, color: AppColors.line),
-                ListTile(
-                  leading: const Icon(LucideIcons.shieldCheck, size: 20),
-                  title: Text(l.privacyDialogTitle,
-                      style: const TextStyle(fontWeight: FontWeight.w500)),
-                  trailing: Icon(LucideIcons.chevronRight,
-                      size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
-                  onTap: () => showPrivacyDialog(context),
-                ),
+                if (_nonEmpty(email))
+                  _InfoRow(
+                      icon: LucideIcons.mail,
+                      label: l.profileFieldEmail,
+                      value: email!),
+                if (_nonEmpty(phone)) ...[
+                  if (_nonEmpty(email))
+                    const Divider(height: 1, color: AppColors.line),
+                  _InfoRow(
+                      icon: LucideIcons.phone,
+                      label: l.profileFieldPhone,
+                      value: phone!),
+                ],
+                if (_nonEmpty(company)) ...[
+                  if (_nonEmpty(email) || _nonEmpty(phone))
+                    const Divider(height: 1, color: AppColors.line),
+                  _InfoRow(
+                      icon: LucideIcons.building2,
+                      label: l.profileFieldCompany,
+                      value: company!),
+                ],
+                if (_nonEmpty(role)) ...[
+                  if (_nonEmpty(email) ||
+                      _nonEmpty(phone) ||
+                      _nonEmpty(company))
+                    const Divider(height: 1, color: AppColors.line),
+                  _InfoRow(
+                      icon: LucideIcons.briefcase,
+                      label: l.profileFieldRole,
+                      value: role!),
+                ],
               ],
             ),
-          ),
+          ],
+
+          // ---- Secção: Preferências ----
           const SizedBox(height: 24),
+          _SectionLabel(l.profileSectionPreferences),
+          const SizedBox(height: 10),
+          _Card(
+            children: [
+              const LanguageTile(),
+              const Divider(height: 1, color: AppColors.line),
+              _ReminderLeadTile(state: state),
+            ],
+          ),
+
+          // ---- Secção: Legal ----
+          const SizedBox(height: 24),
+          _SectionLabel(l.profileSectionLegal),
+          const SizedBox(height: 10),
+          _Card(
+            children: [
+              ListTile(
+                leading: const Icon(LucideIcons.fileText,
+                    size: 20, color: AppColors.navy),
+                title: Text(l.termsDialogTitle,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
+                trailing: Icon(LucideIcons.chevronRight,
+                    size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
+                onTap: () => showTermsDialog(context),
+              ),
+              const Divider(height: 1, color: AppColors.line),
+              ListTile(
+                leading: const Icon(LucideIcons.shieldCheck,
+                    size: 20, color: AppColors.navy),
+                title: Text(l.privacyDialogTitle,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
+                trailing: Icon(LucideIcons.chevronRight,
+                    size: 18, color: AppColors.navy.withValues(alpha: 0.4)),
+                onTap: () => showPrivacyDialog(context),
+              ),
+            ],
+          ),
+
+          // ---- Terminar sessão (tom subtil de alerta) ----
+          const SizedBox(height: 32),
           OutlinedButton.icon(
-            onPressed: () => context.read<AppState>().signOut(),
+            onPressed: () {
+              // Sai do ecrã primeiro para o AuthGate poder redirecionar sem
+              // ficar bloqueado por uma rota empilhada por cima.
+              Navigator.of(context).popUntil((r) => r.isFirst);
+              // signOut é fire-and-forget: o estado local é actualizado
+              // imediatamente e o Supabase desliga em background.
+              context.read<AppState>().signOut();
+            },
             icon: const Icon(LucideIcons.logOut, size: 18),
             label: Text(l.logout),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(50),
+              foregroundColor: AppColors.live,
+              side: BorderSide(
+                  color: AppColors.live.withValues(alpha: 0.45)),
+              textStyle: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static bool _nonEmpty(String? v) => v != null && v.trim().isNotEmpty;
+}
+
+// =================== HEADER ===================
+
+class _HeaderCard extends StatelessWidget {
+  final String initials;
+  final String name;
+  final String? email;
+  const _HeaderCard({
+    required this.initials,
+    required this.name,
+    this.email,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        children: [
+          // Imagem de fundo
+          Positioned.fill(
+            child: Image.asset(
+              'assets/banners/perfil.jpg',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const DecoratedBox(
+                decoration:
+                    BoxDecoration(gradient: AppColors.bannerFallback),
+              ),
+            ),
+          ),
+          // Véu escuro com gradiente para legibilidade
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.navyDeep.withValues(alpha: 0.85),
+                    AppColors.navy.withValues(alpha: 0.55),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+            child: Row(
+              children: [
+                // Avatar com gradiente de marca + iniciais
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppColors.brandGradient,
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.navyDeep.withValues(alpha: 0.45),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    initials,
+                    style: AppTheme.display(
+                        size: 24,
+                        weight: FontWeight.w800,
+                        color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.display(
+                            size: 19, color: Colors.white),
+                      ),
+                      if (email != null && email!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          email!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -138,39 +309,54 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
+
+// =================== STATS ===================
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
+  final Color color;
   const _StatCard({
     required this.icon,
     required this.value,
     required this.label,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.line),
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.techBlue, size: 22),
-          const SizedBox(height: 8),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            style: AppTheme.display(
+                size: 24, color: AppColors.navy, weight: FontWeight.w800),
           ),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: AppColors.navy.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w600,
+              color: AppColors.navy.withValues(alpha: 0.55),
             ),
           ),
         ],
@@ -178,6 +364,105 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
+// =================== SECTION LABEL + CARD WRAPPER + INFO ROW ===================
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        text.toUpperCase(),
+        style: AppTheme.overline(AppColors.navy.withValues(alpha: 0.5)),
+      ),
+    );
+  }
+}
+
+class _Card extends StatelessWidget {
+  final List<Widget> children;
+  const _Card({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.line),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: children),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.bg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon,
+                size: 18, color: AppColors.navy.withValues(alpha: 0.7)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                    color: AppColors.navy.withValues(alpha: 0.55),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.navy,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =================== REMINDER LEAD TILE ===================
 
 String _leadLabel(AppLocalizations l, int minutes) =>
     minutes == 0 ? l.leadAtStart : l.leadMinutes(minutes);
@@ -237,9 +522,11 @@ class _ReminderLeadTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return ListTile(
-      leading: const Icon(LucideIcons.bellRing, size: 20),
+      leading:
+          const Icon(LucideIcons.bellRing, size: 20, color: AppColors.navy),
       title: Text(l.reminderLeadTitle,
-          style: const TextStyle(fontWeight: FontWeight.w500)),
+          style:
+              const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       subtitle: Text(l.reminderLeadHint,
           style: TextStyle(
               fontSize: 11, color: AppColors.navy.withValues(alpha: 0.5))),
@@ -247,7 +534,7 @@ class _ReminderLeadTile extends StatelessWidget {
         _leadLabel(l, state.reminderLeadMinutes),
         style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: AppColors.techBlue),
       ),
       onTap: () => _pick(context),

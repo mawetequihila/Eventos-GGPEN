@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:provider/provider.dart';
 
-import '../../state/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand_logo.dart';
 import 'signup_screen.dart';
 
-/// Tela inicial de autenticação. Duas formas: Google (Supabase) ou
-/// preenchimento manual (formulário em [SignupScreen]).
+/// Tela inicial de autenticação — leva ao formulário de cadastro.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -49,14 +46,13 @@ class LoginScreen extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(24, 32, 24, 24 + mq.padding.bottom),
               child: Column(
                 children: [
-                  const Spacer(flex: 2),
-                  // Logo num "badge" branco para garantir contraste sobre
-                  // a imagem (a logo é dark, sem fundo). Maior e com aro de marca.
+                  const Spacer(flex: 1),
+                  // Logo num "badge" branco com aro acentuado.
                   Container(
-                    padding: const EdgeInsets.all(26),
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
+                      borderRadius: BorderRadius.circular(28),
                       border: Border.all(
                           color: AppColors.accent2.withValues(alpha: 0.35),
                           width: 1.5),
@@ -70,9 +66,9 @@ class LoginScreen extends StatelessWidget {
                       ],
                     ),
                     child: const BrandImage(
-                        asset: AppAssets.ggpen, height: 116),
+                        asset: AppAssets.ggpen, height: 96),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 24),
                   // Kicker de marca.
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -93,57 +89,76 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Text(
                     l.authWelcomeTitle,
                     textAlign: TextAlign.center,
-                    style: AppTheme.display(size: 28, color: Colors.white),
+                    style: AppTheme.display(size: 26, color: Colors.white),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Text(
                     l.authWelcomeSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14.5,
+                      fontSize: 14,
                       height: 1.45,
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
-                  const Spacer(flex: 3),
-                  // CTAs primário (Google) + secundário (email).
-                  FilledButton.icon(
-                    onPressed: () => _signInGoogle(context),
-                    icon: const Icon(LucideIcons.logIn, size: 18),
-                    label: Text(l.authContinueWithGoogle),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.navy,
-                      minimumSize: const Size.fromHeight(52),
-                      textStyle: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
+                  const Spacer(flex: 1),
+                  // Value props — chama a atenção para o que o utilizador
+                  // ganha ao criar conta. Preenche bem o espaço sem ruído.
+                  Row(
+                    children: [
+                      _ValueProp(
+                          icon: LucideIcons.calendarDays,
+                          label: l.agendaTitle),
+                      const SizedBox(width: 10),
+                      _ValueProp(
+                          icon: LucideIcons.bellRing, label: l.reminders),
+                      const SizedBox(width: 10),
+                      _ValueProp(
+                          icon: LucideIcons.bookmark, label: l.favorites),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  _OrDivider(label: l.authOr),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
+                  const Spacer(flex: 2),
+                  // CTA único primário — leva ao formulário de cadastro.
+                  FilledButton.icon(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                           builder: (_) => const SignupScreen()),
                     ),
-                    icon: const Icon(LucideIcons.mail, size: 18),
+                    icon: const Icon(LucideIcons.arrowRight, size: 19),
                     label: Text(l.authCreateAccount),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.55),
-                          width: 1.5),
-                      minimumSize: const Size.fromHeight(52),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.navy,
+                      iconColor: AppColors.techBlue,
+                      minimumSize: const Size.fromHeight(54),
                       textStyle: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w700),
+                      elevation: 0,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+                  // Rodapé subtil — assegura que o cadastro é leve e privado.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(LucideIcons.shieldCheck,
+                          size: 13,
+                          color: Colors.white.withValues(alpha: 0.55)),
+                      const SizedBox(width: 6),
+                      Text(
+                        l.loginPrivacyFooter,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -152,42 +167,42 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-  Future<void> _signInGoogle(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await context.read<AppState>().signInWithGoogle();
-      // A navegação para a home é feita pelo AuthGate, que observa a sessão.
-    } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('$e')));
-    }
-  }
 }
 
-class _OrDivider extends StatelessWidget {
+class _ValueProp extends StatelessWidget {
+  final IconData icon;
   final String label;
-  const _OrDivider({required this.label});
+  const _ValueProp({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final line = Colors.white.withValues(alpha: 0.25);
-    return Row(
-      children: [
-        Expanded(child: Container(height: 1, color: line)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.1,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         ),
-        Expanded(child: Container(height: 1, color: line)),
-      ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.accent2, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: Colors.white.withValues(alpha: 0.92),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

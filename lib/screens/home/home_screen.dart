@@ -17,7 +17,7 @@ import '../../widgets/home_banner.dart';
 import '../../widgets/session_countdown.dart';
 import '../agenda/activity_detail_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final VoidCallback onMenu;
   final VoidCallback onOpenAgenda;
   final VoidCallback onOpenSaved;
@@ -34,6 +34,30 @@ class HomeScreen extends StatelessWidget {
     required this.onOpenNotifications,
     required this.onOpenPerfil,
   });
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Timer? _refresh;
+
+  @override
+  void initState() {
+    super.initState();
+    // Refresh periódico curto: garante que os cartões de actividade
+    // (badge EM CURSO, glow, próxima sessão) actualizam sem o utilizador
+    // precisar de fazer pull-to-refresh quando o tempo bate.
+    _refresh = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _refresh?.cancel();
+    super.dispose();
+  }
 
   String _greeting(AppLocalizations l) {
     final h = DateTime.now().hour;
@@ -58,10 +82,6 @@ class HomeScreen extends StatelessWidget {
 
     final activities = es.activities;
 
-    final live = activities
-        .where((a) => a.statusAt(now) == ActivityStatus.live)
-        .toList()
-      ..sort((a, b) => a.start.compareTo(b.start));
     final upcoming = activities
         .where((a) => a.statusAt(now) == ActivityStatus.upcoming)
         .toList()
@@ -96,7 +116,7 @@ class HomeScreen extends StatelessWidget {
             // Top bar — logo centrada, ladeada pelo menu e pelo sino.
             Row(
               children: [
-                _RoundBtn(icon: LucideIcons.menu, onTap: onMenu),
+                _RoundBtn(icon: LucideIcons.menu, onTap: widget.onMenu),
                 const Expanded(
                   child: Center(
                     child: BrandImage(
@@ -106,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    _RoundBtn(icon: LucideIcons.bell, onTap: onOpenNotifications),
+                    _RoundBtn(icon: LucideIcons.bell, onTap: widget.onOpenNotifications),
                     if (unread > 0)
                       Positioned(
                         top: -2,
@@ -170,19 +190,9 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppTheme.sectionGap),
 
-            // A decorrer agora — primeiro card, para o utilizador saber já o
-            // que está a acontecer no momento.
-            _SLabel(l.liveNow),
-            const SizedBox(height: AppTheme.labelGap),
-            if (live.isNotEmpty)
-              ...live.map((a) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppTheme.cardGap),
-                  child: ActivityCard(activity: a, onTap: () => openDetail(a))))
-            else
-              _Hint(text: l.noLiveSession),
-            const SizedBox(height: AppTheme.sectionGap),
-
-            // Próxima sessão (contagem decrescente para o evento seguinte)
+            // Próxima sessão (contagem decrescente para o evento seguinte).
+            // As sessões a decorrer aparecem na "Programação de hoje" mais
+            // abaixo, já com o selo EM CURSO + destaque âmbar do ActivityCard.
             _CountdownCard(next: next),
             const SizedBox(height: AppTheme.sectionGap),
 
@@ -190,9 +200,9 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: AppTheme.labelGap),
             Row(
               children: [
-                _Shortcut(icon: LucideIcons.bookmark, label: l.shortcutSaved, onTap: onOpenSaved),
+                _Shortcut(icon: LucideIcons.bookmark, label: l.shortcutSaved, onTap: widget.onOpenSaved),
                 const SizedBox(width: 10),
-                _Shortcut(icon: LucideIcons.bell, label: l.shortcutNotifications, onTap: onOpenNotifications),
+                _Shortcut(icon: LucideIcons.bell, label: l.shortcutNotifications, onTap: widget.onOpenNotifications),
               ],
             ),
 
@@ -202,7 +212,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 _SLabel(l.todaySchedule),
                 GestureDetector(
-                  onTap: onOpenAgenda,
+                  onTap: widget.onOpenAgenda,
                   child: Text(l.seeAll,
                       style: const TextStyle(
                           fontSize: 12,
@@ -231,27 +241,30 @@ class _CountdownCard extends StatefulWidget {
 }
 
 class _CountdownCardState extends State<_CountdownCard>
-    with SingleTickerProviderStateMixin {
-  Timer? _tick;
-  late final AnimationController _pulse;
+    with TickerProviderStateMixin {
+  late final AnimationController _pulse; // sombra (breathing)
+  late final AnimationController _radar; // anel "radar" do indicador urgente
 
   @override
   void initState() {
     super.initState();
-    // Tick a cada segundo para reavaliar se a sessão está prestes a começar.
-    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
+    // Sem timer próprio aqui — o SessionCountdown tem o dele (a cada 1s) e a
+    // HomeScreen faz refresh global (a cada 3s). Reduz rebuilds duplicados que
+    // estavam a fazer os segundos saltar.
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+    _radar = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _tick?.cancel();
     _pulse.dispose();
+    _radar.dispose();
     super.dispose();
   }
 
@@ -265,7 +278,7 @@ class _CountdownCardState extends State<_CountdownCard>
         n != null && diff.inSeconds > 0 && diff.inMinutes < 5;
 
     final overlineColor = isUrgent
-        ? AppColors.liveBright
+        ? AppColors.accent2
         : Colors.white.withValues(alpha: 0.6);
 
     return AnimatedBuilder(
@@ -274,7 +287,7 @@ class _CountdownCardState extends State<_CountdownCard>
         final t = _pulse.value;
         final shadow = isUrgent
             ? BoxShadow(
-                color: AppColors.live.withValues(alpha: 0.25 + 0.20 * t),
+                color: AppColors.techBlue.withValues(alpha: 0.30 + 0.20 * t),
                 blurRadius: 22 + 10 * t,
                 offset: const Offset(0, 10),
               )
@@ -300,12 +313,7 @@ class _CountdownCardState extends State<_CountdownCard>
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isUrgent) ...[
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                      color: AppColors.liveBright, shape: BoxShape.circle),
-                ),
+                _RadarDot(radar: _radar, color: AppColors.accent2),
                 const SizedBox(width: 8),
               ],
               Text(l.nextSessionStartsIn,
@@ -428,21 +436,66 @@ class _Shortcut extends StatelessWidget {
   }
 }
 
-class _Hint extends StatelessWidget {
-  final String text;
-  const _Hint({required this.text});
+/// Indicador "radar": ponto sólido no centro com dois anéis que pulsam para
+/// fora, em escala e opacidade, dando sentido de urgência elegante.
+class _RadarDot extends StatelessWidget {
+  final AnimationController radar;
+  final Color color;
+  const _RadarDot({required this.radar, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    final muted = AppColors.navy.withValues(alpha: 0.55);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: AnimatedBuilder(
+        animation: radar,
+        builder: (_, __) {
+          // Dois anéis desfasados — um inicia a meio do ciclo do outro,
+          // dando a sensação de "ping-ping" contínuo.
+          final t1 = radar.value;
+          final t2 = (radar.value + 0.5) % 1.0;
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              _ring(t1),
+              _ring(t2),
+              // Núcleo sólido — sempre visível, foco do indicador.
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                  boxShadow: [
+                    BoxShadow(
+                        color: color.withValues(alpha: 0.45),
+                        blurRadius: 4,
+                        spreadRadius: 0.5),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
-      child: Text(text, style: TextStyle(color: muted, fontSize: 13)),
+    );
+  }
+
+  Widget _ring(double t) {
+    // size: 7 → 22 ao longo de t
+    // alpha: 0.55 → 0 ao longo de t (anel "fade out" enquanto expande)
+    final size = 7.0 + 15.0 * t;
+    final alpha = (0.55 * (1 - t)).clamp(0.0, 1.0);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+            color: color.withValues(alpha: alpha), width: 1.2),
+      ),
     );
   }
 }
+

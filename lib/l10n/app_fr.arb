@@ -232,5 +232,23 @@
   "profileFieldRole": "Fonction",
   "completeProfileTitle": "Complétez votre profil",
   "completeProfileSubtitle": "Quelques infos de plus — téléphone, entreprise et fonction.",
-  "profileSaveLater": "Terminer plus tard"
+  "profileSaveLater": "Terminer plus tard",
+
+  "welcomeBackTitle": "BIENVENUE",
+  "welcomeBackHello": "Bonjour, {name} !",
+  "@welcomeBackHello": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBackContinue": "Continuer",
+  "welcomeBackSwitch": "Ce n'est pas vous ? Utiliser un autre compte",
+  "welcomeBackSwitchTitle": "Utiliser un autre compte ?",
+  "welcomeBackSwitchBody": "Cela supprimera les données enregistrées sur ce téléphone. Vous devrez vous inscrire à nouveau.",
+  "welcomeBackSwitchConfirm": "Supprimer et continuer",
+
+  "profileSectionPersonal": "Informations personnelles",
+  "profileSectionPreferences": "Préférences",
+  "profileSectionLegal": "Mentions légales",
+  "profileFieldEmail": "Email",
+
+  "loginPrivacyFooter": "Vos données restent sur cet appareil."
 }

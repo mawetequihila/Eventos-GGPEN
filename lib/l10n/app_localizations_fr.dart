@@ -690,4 +690,44 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileSaveLater => 'Terminer plus tard';
+
+  @override
+  String get welcomeBackTitle => 'BIENVENUE';
+
+  @override
+  String welcomeBackHello(String name) {
+    return 'Bonjour, $name !';
+  }
+
+  @override
+  String get welcomeBackContinue => 'Continuer';
+
+  @override
+  String get welcomeBackSwitch =>
+      'Ce n\'est pas vous ? Utiliser un autre compte';
+
+  @override
+  String get welcomeBackSwitchTitle => 'Utiliser un autre compte ?';
+
+  @override
+  String get welcomeBackSwitchBody =>
+      'Cela supprimera les données enregistrées sur ce téléphone. Vous devrez vous inscrire à nouveau.';
+
+  @override
+  String get welcomeBackSwitchConfirm => 'Supprimer et continuer';
+
+  @override
+  String get profileSectionPersonal => 'Informations personnelles';
+
+  @override
+  String get profileSectionPreferences => 'Préférences';
+
+  @override
+  String get profileSectionLegal => 'Mentions légales';
+
+  @override
+  String get profileFieldEmail => 'Email';
+
+  @override
+  String get loginPrivacyFooter => 'Vos données restent sur cet appareil.';
 }

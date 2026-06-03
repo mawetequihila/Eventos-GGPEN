@@ -1361,6 +1361,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finish later'**
   String get profileSaveLater;
+
+  /// No description provided for @welcomeBackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'WELCOME BACK'**
+  String get welcomeBackTitle;
+
+  /// No description provided for @welcomeBackHello.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello, {name}!'**
+  String welcomeBackHello(String name);
+
+  /// No description provided for @welcomeBackContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get welcomeBackContinue;
+
+  /// No description provided for @welcomeBackSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Not you? Use another account'**
+  String get welcomeBackSwitch;
+
+  /// No description provided for @welcomeBackSwitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another account?'**
+  String get welcomeBackSwitchTitle;
+
+  /// No description provided for @welcomeBackSwitchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will delete the data saved on this phone. You\'ll need to sign up again.'**
+  String get welcomeBackSwitchBody;
+
+  /// No description provided for @welcomeBackSwitchConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete and continue'**
+  String get welcomeBackSwitchConfirm;
+
+  /// No description provided for @profileSectionPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal info'**
+  String get profileSectionPersonal;
+
+  /// No description provided for @profileSectionPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get profileSectionPreferences;
+
+  /// No description provided for @profileSectionLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get profileSectionLegal;
+
+  /// No description provided for @profileFieldEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profileFieldEmail;
+
+  /// No description provided for @loginPrivacyFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays on this device.'**
+  String get loginPrivacyFooter;
 }
 
 class _AppLocalizationsDelegate

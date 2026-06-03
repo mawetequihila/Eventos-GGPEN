@@ -287,5 +287,23 @@
   "profileFieldRole": "Role",
   "completeProfileTitle": "Complete your profile",
   "completeProfileSubtitle": "Just a few more details — phone, company and role.",
-  "profileSaveLater": "Finish later"
+  "profileSaveLater": "Finish later",
+
+  "welcomeBackTitle": "WELCOME BACK",
+  "welcomeBackHello": "Hello, {name}!",
+  "@welcomeBackHello": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBackContinue": "Continue",
+  "welcomeBackSwitch": "Not you? Use another account",
+  "welcomeBackSwitchTitle": "Use another account?",
+  "welcomeBackSwitchBody": "This will delete the data saved on this phone. You'll need to sign up again.",
+  "welcomeBackSwitchConfirm": "Delete and continue",
+
+  "profileSectionPersonal": "Personal info",
+  "profileSectionPreferences": "Preferences",
+  "profileSectionLegal": "Legal",
+  "profileFieldEmail": "Email",
+
+  "loginPrivacyFooter": "Your data stays on this device."
 }

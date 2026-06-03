@@ -684,4 +684,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileSaveLater => 'Finish later';
+
+  @override
+  String get welcomeBackTitle => 'WELCOME BACK';
+
+  @override
+  String welcomeBackHello(String name) {
+    return 'Hello, $name!';
+  }
+
+  @override
+  String get welcomeBackContinue => 'Continue';
+
+  @override
+  String get welcomeBackSwitch => 'Not you? Use another account';
+
+  @override
+  String get welcomeBackSwitchTitle => 'Use another account?';
+
+  @override
+  String get welcomeBackSwitchBody =>
+      'This will delete the data saved on this phone. You\'ll need to sign up again.';
+
+  @override
+  String get welcomeBackSwitchConfirm => 'Delete and continue';
+
+  @override
+  String get profileSectionPersonal => 'Personal info';
+
+  @override
+  String get profileSectionPreferences => 'Preferences';
+
+  @override
+  String get profileSectionLegal => 'Legal';
+
+  @override
+  String get profileFieldEmail => 'Email';
+
+  @override
+  String get loginPrivacyFooter => 'Your data stays on this device.';
 }

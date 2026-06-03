@@ -12,7 +12,6 @@ import '../../models/speaker.dart';
 import '../../services/notification_service.dart';
 import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
-import '../../state/event_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/data_status.dart';
@@ -267,23 +266,38 @@ class _SpeakersTab extends StatelessWidget {
             ),
           );
         }
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          children: [
-            Text(l.speakersUpper,
-                style:
-                    AppTheme.overline(AppColors.navy.withValues(alpha: 0.45))),
-            const SizedBox(height: 12),
-            for (var i = 0; i < speakers.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _SpeakerCard(
-                  speaker: speakers[i],
-                  color: _palette[i % _palette.length],
-                  muted: muted,
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.speakersConfirmed(speakers.length),
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.navy.withValues(alpha: 0.55)),
                 ),
-              ),
-          ],
+                const SizedBox(height: 14),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 0.74,
+                  ),
+                  itemCount: speakers.length,
+                  itemBuilder: (_, i) => _SpeakerCard(
+                    speaker: speakers[i],
+                    color: _palette[i % _palette.length],
+                    muted: muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -300,73 +314,102 @@ class _SpeakerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final es = context.watch<EventState>();
-    final count = es.activities
-        .where((a) => (a.speaker ?? '').contains(speaker.nome))
-        .length;
+    final repo = context.read<GgpenRepository>();
     final org = speaker.organizacao?.trim() ?? '';
     final baseRole = org.isEmpty ? l.guestSpeaker : org;
     final fullRole =
         speaker.papel == 'moderador' ? '${l.moderator} · $baseRole' : baseRole;
     final hasPhoto = (speaker.avatarUrl ?? '').isNotEmpty;
 
-    void openDetail() => showSpeakerDetail(
-          context,
-          Speaker(
-            id: speaker.id,
-            name: speaker.nome,
-            role: fullRole,
-            bio: speaker.bio,
-            avatarUrl: speaker.avatarUrl,
-            sessions: count,
-            color: color,
+    return FutureBuilder<List<sb.Activity>>(
+      future: repo.getSpeakerSessions(speaker.id),
+      builder: (context, snap) {
+        // Usa a contagem real se carregou, senão assume 1
+        final isLoaded = snap.hasData || snap.hasError;
+        final count = isLoaded 
+            ? (snap.data?.length ?? 1)
+            : 1;
+        
+        void openDetail() {
+          // Sempre passa o ID e deixa o detalhe carregar as sessões
+          showSpeakerDetail(
+            context,
+            Speaker(
+              id: speaker.id,
+              name: speaker.nome,
+              role: fullRole,
+              bio: speaker.bio,
+              avatarUrl: speaker.avatarUrl,
+              sessions: count,
+              color: color,
+            ),
+          );
+        }
+        
+        return Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: openDetail,
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.line),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: color,
+                    backgroundImage: hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
+                    child: hasPhoto
+                        ? null
+                        : Text(_initialsOf(speaker.nome),
+                            style: AppTheme.display(
+                                size: 18,
+                                weight: FontWeight.w700,
+                                color: Colors.white)),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        speaker.nome,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTheme.display(
+                            size: 14,
+                            weight: FontWeight.w700,
+                            color: AppColors.navy,
+                            height: 1.2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      l.sessionsCount(count),
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: color),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: openDetail,
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.line),
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: color,
-                backgroundImage: hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
-                child: hasPhoto
-                    ? null
-                    : Text(_initialsOf(speaker.nome),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14)),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(speaker.nome, style: AppTheme.cardTitle()),
-                    const SizedBox(height: 2),
-                    Text(l.sessionsCount(count),
-                        style: AppTheme.meta(muted)),
-                  ],
-                ),
-              ),
-              Icon(LucideIcons.chevronRight,
-                  size: 18, color: AppColors.navy.withValues(alpha: 0.35)),
-            ],
-          ),
-        ),
-      ),
+      },
     );
   }
 }

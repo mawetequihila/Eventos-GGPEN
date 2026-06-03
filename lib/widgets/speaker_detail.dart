@@ -59,10 +59,16 @@ class _SpeakerDetailDialog extends StatelessWidget {
                       ? Future.value(const <sb.Activity>[])
                       : repo.getSpeakerSessions(speaker.id!),
                   builder: (context, snap) {
+                    final isLoading = snap.connectionState == ConnectionState.waiting;
+                    final hasError = snap.hasError;
                     final sessions = snap.data ?? const <sb.Activity>[];
                     final count = sessions.isNotEmpty
                         ? sessions.length
                         : speaker.sessions;
+                    
+                    // Sempre mostra a seção de sessões se houver pelo menos 1
+                    final shouldShowSessions = count > 0;
+                    
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -83,37 +89,74 @@ class _SpeakerDetailDialog extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (sessions.isNotEmpty) ...[
+                        if (shouldShowSessions) ...[
                           const SizedBox(height: 22),
                           Text(l.speakerSessions.toUpperCase(),
                               style: AppTheme.overline(
                                   AppColors.navy.withValues(alpha: 0.45))),
                           const SizedBox(height: 10),
-                          ...sessions.map((a) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.bg,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border:
-                                        Border.all(color: AppColors.line),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(a.titulo,
-                                          style: AppTheme.cardTitle()),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
-                                        style: AppTheme.meta(muted),
-                                      ),
-                                    ],
+                          if (isLoading)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bg,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.line),
+                                ),
+                                child: const SizedBox(
+                                  height: 60,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
                                 ),
-                              )),
+                              ),
+                            )
+                          else if (hasError)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bg,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppColors.line),
+                                ),
+                                child: Text(
+                                  l.loadError,
+                                  style: TextStyle(fontSize: 12, color: muted),
+                                ),
+                              ),
+                            )
+                          else
+                            ...sessions.map((a) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.bg,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border:
+                                          Border.all(color: AppColors.line),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(a.titulo,
+                                            style: AppTheme.cardTitle()),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
+                                          style: AppTheme.meta(muted),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )),
                         ],
                         const SizedBox(height: 22),
                         Text(l.aboutSpeaker.toUpperCase(),

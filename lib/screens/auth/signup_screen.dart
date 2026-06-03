@@ -61,15 +61,21 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
     setState(() => _busy = true);
-    await context.read<AppState>().signUpLocal(
-          name: _name.text,
-          email: _email.text,
-          phone: _phone.text,
-          company: _company.text,
-          role: _role.text,
-        );
-    // O AuthGate (Consumer<AppState>) redireciona para a HomeShell ao detectar
-    // que ficou logged in. Nada mais é preciso aqui.
+    try {
+      await context.read<AppState>().signUpLocal(
+            name: _name.text,
+            email: _email.text,
+            phone: _phone.text,
+            company: _company.text,
+            role: _role.text,
+          );
+      // Desempilha SignupScreen (e qualquer outra rota empurrada) para
+      // expor o AuthGate, que já está pronto a mostrar a HomeShell.
+      if (!mounted) return;
+      Navigator.of(context).popUntil((r) => r.isFirst);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override

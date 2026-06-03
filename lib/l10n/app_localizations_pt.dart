@@ -686,4 +686,43 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get profileSaveLater => 'Concluir mais tarde';
+
+  @override
+  String get welcomeBackTitle => 'BEM-VINDO DE VOLTA';
+
+  @override
+  String welcomeBackHello(String name) {
+    return 'Olá, $name!';
+  }
+
+  @override
+  String get welcomeBackContinue => 'Continuar';
+
+  @override
+  String get welcomeBackSwitch => 'Não és tu? Usar outra conta';
+
+  @override
+  String get welcomeBackSwitchTitle => 'Usar outra conta?';
+
+  @override
+  String get welcomeBackSwitchBody =>
+      'Isto vai apagar os dados guardados neste telemóvel. Vais ter de fazer cadastro outra vez.';
+
+  @override
+  String get welcomeBackSwitchConfirm => 'Apagar e continuar';
+
+  @override
+  String get profileSectionPersonal => 'Informação pessoal';
+
+  @override
+  String get profileSectionPreferences => 'Preferências';
+
+  @override
+  String get profileSectionLegal => 'Legal';
+
+  @override
+  String get profileFieldEmail => 'Email';
+
+  @override
+  String get loginPrivacyFooter => 'Os teus dados ficam neste telemóvel.';
 }

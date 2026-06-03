@@ -682,4 +682,43 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get profileSaveLater => 'إكمال لاحقًا';
+
+  @override
+  String get welcomeBackTitle => 'مرحبًا بعودتك';
+
+  @override
+  String welcomeBackHello(String name) {
+    return 'مرحبًا، $name!';
+  }
+
+  @override
+  String get welcomeBackContinue => 'متابعة';
+
+  @override
+  String get welcomeBackSwitch => 'لست أنت؟ استخدم حسابًا آخر';
+
+  @override
+  String get welcomeBackSwitchTitle => 'استخدام حساب آخر؟';
+
+  @override
+  String get welcomeBackSwitchBody =>
+      'سيؤدي هذا إلى حذف البيانات المحفوظة على هذا الهاتف. ستحتاج إلى التسجيل مرة أخرى.';
+
+  @override
+  String get welcomeBackSwitchConfirm => 'حذف ومتابعة';
+
+  @override
+  String get profileSectionPersonal => 'المعلومات الشخصية';
+
+  @override
+  String get profileSectionPreferences => 'التفضيلات';
+
+  @override
+  String get profileSectionLegal => 'قانوني';
+
+  @override
+  String get profileFieldEmail => 'البريد الإلكتروني';
+
+  @override
+  String get loginPrivacyFooter => 'بياناتك تبقى على هذا الجهاز.';
 }

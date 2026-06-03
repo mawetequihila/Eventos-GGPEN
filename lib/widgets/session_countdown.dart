@@ -52,23 +52,41 @@ class _SessionCountdownState extends State<SessionCountdown> {
 
     String two(int n) => n.toString().padLeft(2, '0');
 
-    // A mais de 24h mostra Dias · Horas · Min; no próprio dia mostra Horas · Min · Seg.
+    // A mais de 24h mostra 4 unidades (Dias · Horas · Min · Seg) para haver
+    // sempre movimento visível; no próprio dia mostra 3 (Horas · Min · Seg).
     final List<Widget> units;
+    final double numberSize;
+    final double sepSize;
+    final double sepHPad;
     if (diff.inDays >= 1) {
+      numberSize = 30;
+      sepSize = 24;
+      sepHPad = 6;
       units = [
-        _unit(two(diff.inDays), l.unitDays, base, labelColor),
-        _sep(sepColor),
-        _unit(two(diff.inHours % 24), l.unitHoursLong, base, labelColor),
-        _sep(sepColor),
-        _unit(two(diff.inMinutes % 60), l.unitMinLong, accent, labelColor),
+        _unit(two(diff.inDays), l.unitDays, base, labelColor, numberSize),
+        _sep(sepColor, sepSize, sepHPad),
+        _unit(two(diff.inHours % 24), l.unitHoursLong, base, labelColor,
+            numberSize),
+        _sep(sepColor, sepSize, sepHPad),
+        _unit(two(diff.inMinutes % 60), l.unitMinLong, base, labelColor,
+            numberSize),
+        _sep(sepColor, sepSize, sepHPad),
+        _unit(two(diff.inSeconds % 60), l.unitSecLong, accent, labelColor,
+            numberSize),
       ];
     } else {
+      numberSize = 38;
+      sepSize = 30;
+      sepHPad = 8;
       units = [
-        _unit(two(diff.inHours), l.unitHoursLong, base, labelColor),
-        _sep(sepColor),
-        _unit(two(diff.inMinutes % 60), l.unitMinLong, base, labelColor),
-        _sep(sepColor),
-        _unit(two(diff.inSeconds % 60), l.unitSecLong, accent, labelColor),
+        _unit(two(diff.inHours), l.unitHoursLong, base, labelColor,
+            numberSize),
+        _sep(sepColor, sepSize, sepHPad),
+        _unit(two(diff.inMinutes % 60), l.unitMinLong, base, labelColor,
+            numberSize),
+        _sep(sepColor, sepSize, sepHPad),
+        _unit(two(diff.inSeconds % 60), l.unitSecLong, accent, labelColor,
+            numberSize),
       ];
     }
     return Row(
@@ -78,10 +96,11 @@ class _SessionCountdownState extends State<SessionCountdown> {
     );
   }
 
-  Widget _unit(String v, String label, Color color, Color labelColor) {
+  Widget _unit(
+      String v, String label, Color color, Color labelColor, double size) {
     return Column(
       children: [
-        Text(v, style: AppTheme.display(size: 38, color: color, height: 1)),
+        Text(v, style: AppTheme.display(size: size, color: color, height: 1)),
         const SizedBox(height: 4),
         Text(label,
             style: TextStyle(
@@ -93,10 +112,10 @@ class _SessionCountdownState extends State<SessionCountdown> {
     );
   }
 
-  Widget _sep(Color color) => Padding(
-        padding: const EdgeInsets.only(bottom: 14, left: 8, right: 8),
+  Widget _sep(Color color, double size, double hPad) => Padding(
+        padding: EdgeInsets.only(bottom: 14, left: hPad, right: hPad),
         child: Text(':',
             style: TextStyle(
-                fontSize: 30, fontWeight: FontWeight.w300, color: color)),
+                fontSize: size, fontWeight: FontWeight.w300, color: color)),
       );
 }
