@@ -71,6 +71,7 @@ class Speaker {
   final String? bio;
   final String? avatarUrl;
   final String papel; // 'orador' | 'moderador' (vem da ligacao activity_speakers)
+  final int? ordem; // posicao definida no painel (menor = primeiro)
 
   Speaker({
     required this.id,
@@ -79,6 +80,7 @@ class Speaker {
     this.bio,
     this.avatarUrl,
     this.papel = 'orador',
+    this.ordem,
   });
 
   factory Speaker.fromMap(Map<String, dynamic> m, {String papel = 'orador'}) => Speaker(
@@ -88,6 +90,7 @@ class Speaker {
         bio: m['bio'] as String?,
         avatarUrl: m['avatar_url'] as String?,
         papel: papel,
+        ordem: (m['ordem'] as num?)?.toInt(),
       );
 }
 

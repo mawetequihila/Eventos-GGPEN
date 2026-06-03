@@ -48,6 +48,14 @@ class EventState extends ChangeNotifier {
       final acts = await repo.getActivities(ev.id);
       final counts = await repo.getSpeakerSessionCounts();
       final allSpeakers = await repo.getAllSpeakers();
+      // Garantia extra: ordenar também no cliente por `ordem` (menor primeiro;
+      // sem ordem vai para o fim) e nome como desempate — independente da query.
+      allSpeakers.sort((a, b) {
+        final ao = a.ordem ?? 1 << 30;
+        final bo = b.ordem ?? 1 << 30;
+        if (ao != bo) return ao.compareTo(bo);
+        return a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+      });
 
       // Dias distintos (por data de início), ordenados.
       final dayKeys = <DateTime>[];

@@ -39,26 +39,31 @@ class SpeakersScreen extends StatelessWidget {
       return const LoadingView();
     }
     final speakers = es.speakers;
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
-      children: [
-        Text(l.speakersConfirmed(speakers.length),
-            style: TextStyle(
-                fontSize: 13, color: AppColors.navy.withValues(alpha: 0.55))),
-        const SizedBox(height: 14),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.74,
+    return RefreshIndicator(
+      color: AppColors.techBlue,
+      onRefresh: es.load,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          Text(l.speakersConfirmed(speakers.length),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.navy.withValues(alpha: 0.55))),
+          const SizedBox(height: 14),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.74,
+            ),
+            itemCount: speakers.length,
+            itemBuilder: (_, i) => _SpeakerCard(speaker: speakers[i]),
           ),
-          itemCount: speakers.length,
-          itemBuilder: (_, i) => _SpeakerCard(speaker: speakers[i]),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

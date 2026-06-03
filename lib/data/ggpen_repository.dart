@@ -71,9 +71,14 @@ class GgpenRepository {
     return AppEvent.fromMap(rows.first);
   }
 
-  /// Todos os oradores (pagina Oradores). Sem papel associado a atividade.
+  /// Todos os oradores (pagina Oradores), pela ordem definida em `ordem`
+  /// (menor = primeiro); sem ordem definida vai para o fim; nome como desempate.
   Future<List<Speaker>> getAllSpeakers() async {
-    final rows = await _db.from('speakers').select().order('nome');
+    final rows = await _db
+        .from('speakers')
+        .select()
+        .order('ordem', nullsFirst: false)
+        .order('nome');
     return rows.map((m) => Speaker.fromMap(m)).toList();
   }
 
@@ -130,12 +135,14 @@ class GgpenRepository {
     return list;
   }
 
-  /// Oradores + moderadores de uma atividade (embedding da tabela speakers).
+  /// Oradores + moderadores de uma atividade (embedding da tabela speakers),
+  /// pela ordem definida em `activity_speakers.ordem` (menor = primeiro).
   Future<List<Speaker>> getSpeakers(String activityId) async {
     final rows = await _db
         .from('activity_speakers')
-        .select('papel, speakers(*)')
-        .eq('activity_id', activityId);
+        .select('papel, ordem, speakers(*)')
+        .eq('activity_id', activityId)
+        .order('ordem', nullsFirst: false);
     return rows.map((r) {
       final s = r['speakers'] as Map<String, dynamic>;
       return Speaker.fromMap(s, papel: r['papel'] as String);
