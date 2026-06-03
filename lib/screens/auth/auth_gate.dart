@@ -6,10 +6,14 @@ import '../../theme/app_colors.dart';
 import '../home_shell.dart';
 import 'complete_profile_screen.dart';
 import 'login_screen.dart';
+import 'welcome_back_screen.dart';
 
 /// Decide o ecrã raiz com base no estado da sessão:
-/// sem sessão → Login; Google a verificar perfil → loading; Google sem
-/// telefone/empresa/cargo → completar perfil; caso contrário → HomeShell.
+/// - loggedOut → Login (primeira vez ou perfil esquecido)
+/// - welcomeBack → "Bem-vindo de volta" (perfil local guardado, sessão inactiva)
+/// - checking → loading (Google a verificar perfil)
+/// - needsProfile → completar perfil (Google sem telefone/empresa/cargo)
+/// - ready → HomeShell
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -18,6 +22,8 @@ class AuthGate extends StatelessWidget {
     switch (context.watch<AppState>().authStatus) {
       case AuthStatus.loggedOut:
         return const LoginScreen();
+      case AuthStatus.welcomeBack:
+        return const WelcomeBackScreen();
       case AuthStatus.checking:
         return const Scaffold(
           body: Center(

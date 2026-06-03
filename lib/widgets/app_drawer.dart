@@ -15,7 +15,6 @@ class AppDrawer extends StatelessWidget {
   final VoidCallback onOpenMinha;
   final VoidCallback onOpenNotif;
   final VoidCallback onOpenMapa;
-  final VoidCallback onOpenParticipantes;
   final VoidCallback onOpenPerfil;
 
   const AppDrawer({
@@ -25,7 +24,6 @@ class AppDrawer extends StatelessWidget {
     required this.onOpenMinha,
     required this.onOpenNotif,
     required this.onOpenMapa,
-    required this.onOpenParticipantes,
     required this.onOpenPerfil,
   });
 
@@ -77,8 +75,6 @@ class AppDrawer extends StatelessWidget {
                 _push(context, LucideIcons.bell, l.drawerNotifications,
                     onOpenNotif),
                 _push(context, LucideIcons.map, l.drawerMap, onOpenMapa),
-                _push(context, LucideIcons.userCheck, l.drawerParticipants,
-                    onOpenParticipantes),
                 _push(context, LucideIcons.user, l.drawerProfile, onOpenPerfil),
                 const Divider(height: 16, color: AppColors.line),
                 const LanguageTile(),

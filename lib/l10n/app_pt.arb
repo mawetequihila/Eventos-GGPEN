@@ -232,5 +232,23 @@
   "profileFieldRole": "Cargo",
   "completeProfileTitle": "Complete o seu perfil",
   "completeProfileSubtitle": "Só mais alguns dados — telefone, empresa e cargo.",
-  "profileSaveLater": "Concluir mais tarde"
+  "profileSaveLater": "Concluir mais tarde",
+
+  "welcomeBackTitle": "BEM-VINDO DE VOLTA",
+  "welcomeBackHello": "Olá, {name}!",
+  "@welcomeBackHello": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBackContinue": "Continuar",
+  "welcomeBackSwitch": "Não és tu? Usar outra conta",
+  "welcomeBackSwitchTitle": "Usar outra conta?",
+  "welcomeBackSwitchBody": "Isto vai apagar os dados guardados neste telemóvel. Vais ter de fazer cadastro outra vez.",
+  "welcomeBackSwitchConfirm": "Apagar e continuar",
+
+  "profileSectionPersonal": "Informação pessoal",
+  "profileSectionPreferences": "Preferências",
+  "profileSectionLegal": "Legal",
+  "profileFieldEmail": "Email",
+
+  "loginPrivacyFooter": "Os teus dados ficam neste telemóvel."
 }

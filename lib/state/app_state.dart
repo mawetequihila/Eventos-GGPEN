@@ -8,11 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/ggpen_repository.dart';
 
 /// Estado da sessão para decidir o ecrã raiz.
-/// - loggedOut: sem sessão
+/// - loggedOut: sem sessão e sem perfil local guardado
+/// - welcomeBack: há perfil local guardado mas sessão inactiva → "Bem-vindo de volta"
 /// - checking: sessão Google iniciada, a verificar o perfil
 /// - needsProfile: Google sem telefone/empresa/cargo → completar perfil
 /// - ready: pronto para a app
-enum AuthStatus { loggedOut, checking, needsProfile, ready }
+enum AuthStatus { loggedOut, welcomeBack, checking, needsProfile, ready }
 
 /// Estado global: favoritos e lembretes (locais), idioma (local) e sessão
 /// (autenticação Google via Supabase). Favoritos NUNCA vão para o backend.
@@ -22,6 +23,7 @@ class AppState extends ChangeNotifier {
   static const _kLocale = 'locale';
   static const _kLeadMinutes = 'reminderLeadMinutes';
   static const _kLocalProfile = 'localProfile';
+  static const _kLocalProfileActive = 'localProfileActive';
   static const _kProfileComplete = 'profileComplete';
 
   /// Opções de antecedência do lembrete (minutos antes de começar).
@@ -52,6 +54,8 @@ class AppState extends ChangeNotifier {
   Locale? _locale;
   int _reminderLeadMinutes = 15;
   Map<String, String>? _localProfile;
+  bool _localProfileActive = false;
+  bool _signingOut = false;
 
   // Perfil Supabase (Google): linha de `profiles` + estado da verificação.
   Map<String, dynamic>? _profile;
@@ -65,8 +69,13 @@ class AppState extends ChangeNotifier {
 
   Set<String> get favorites => Set.unmodifiable(_favorites);
 
-  /// Sessão iniciada — Google (Supabase) OU perfil local.
-  bool get isLoggedIn => _repo.isLoggedIn || _localProfile != null;
+  /// Sessão iniciada — Google (Supabase) OU perfil local activo.
+  /// O perfil local pode estar guardado mas inactivo (após signOut) — nesse
+  /// caso `isLoggedIn` é false e o AuthGate mostra `welcomeBack`.
+  bool get isLoggedIn => _repo.isLoggedIn || _localProfileActive;
+
+  /// Há perfil local guardado (para mostrar "Bem-vindo de volta" após logout).
+  bool get hasSavedLocalProfile => _localProfile != null;
 
   /// Perfil local (quando o utilizador se inscreveu pelo formulário). Apenas
   /// guardado em SharedPreferences. Sem backend.
@@ -99,6 +108,12 @@ class AppState extends ChangeNotifier {
 
   /// Estado da sessão para o AuthGate decidir o ecrã raiz.
   AuthStatus get authStatus {
+    // Durante o logout (Google em background) tratamos como sem sessão,
+    // para a UI redirecionar imediatamente e não ficar pendurada.
+    if (_signingOut) {
+      if (_localProfile != null) return AuthStatus.welcomeBack;
+      return AuthStatus.loggedOut;
+    }
     if (_repo.isLoggedIn) {
       // Caminho rápido: já sabemos que o perfil está completo → entra direto.
       if (_profileDismissed || _profileCompleteCached) return AuthStatus.ready;
@@ -107,7 +122,8 @@ class AppState extends ChangeNotifier {
           ? AuthStatus.needsProfile
           : AuthStatus.ready;
     }
-    if (_localProfile != null) return AuthStatus.ready;
+    if (_localProfileActive) return AuthStatus.ready;
+    if (_localProfile != null) return AuthStatus.welcomeBack;
     return AuthStatus.loggedOut;
   }
 
@@ -140,6 +156,7 @@ class AppState extends ChangeNotifier {
     }
     _reminderLeadMinutes = prefs.getInt(_kLeadMinutes) ?? 15;
     _profileCompleteCached = prefs.getBool(_kProfileComplete) ?? false;
+    _localProfileActive = prefs.getBool(_kLocalProfileActive) ?? false;
     final profileStr = prefs.getString(_kLocalProfile);
     if (profileStr != null && profileStr.isNotEmpty) {
       try {
@@ -220,7 +237,27 @@ class AppState extends ChangeNotifier {
       'company': company.trim(),
       'role': role.trim(),
     };
+    _localProfileActive = true;
     await _prefs?.setString(_kLocalProfile, jsonEncode(_localProfile));
+    await _prefs?.setBool(_kLocalProfileActive, true);
+    notifyListeners();
+  }
+
+  /// Reactiva a sessão local guardada (usado no "Bem-vindo de volta").
+  Future<void> resumeLocalSession() async {
+    if (_localProfile == null) return;
+    _localProfileActive = true;
+    await _prefs?.setBool(_kLocalProfileActive, true);
+    notifyListeners();
+  }
+
+  /// Esquece o perfil local guardado (usado em "Não és tu? Usar outra conta")
+  /// — limpa dados e desactiva a sessão. Não toca na sessão Google.
+  Future<void> forgetLocalProfile() async {
+    _localProfile = null;
+    _localProfileActive = false;
+    await _prefs?.remove(_kLocalProfile);
+    await _prefs?.remove(_kLocalProfileActive);
     notifyListeners();
   }
 
@@ -263,20 +300,34 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Termina sessão (Google e/ou perfil local) e limpa o perfil persistido.
+  /// Termina sessão (Google e/ou perfil local). O perfil local **NÃO** é
+  /// apagado — fica disponível para "Bem-vindo de volta". Para apagar mesmo,
+  /// usar [forgetLocalProfile].
+  ///
+  /// Atualiza o estado local **imediatamente** e desliga o Supabase em
+  /// background com timeout, para a UI não bloquear se a rede estiver lenta.
   Future<void> signOut() async {
-    if (_repo.isLoggedIn) {
-      await _repo.signOut();
-    }
-    if (_localProfile != null) {
-      _localProfile = null;
-      await _prefs?.remove(_kLocalProfile);
-    }
+    final wasGoogle = _repo.isLoggedIn;
+    _signingOut = true;
+    _localProfileActive = false;
     _profile = null;
     _profileChecked = false;
     _profileDismissed = false;
     _profileCompleteCached = false;
+    notifyListeners(); // AuthGate redireciona imediatamente
+    // Persistência local rápida (SharedPreferences).
+    await _prefs?.remove(_kLocalProfileActive);
     await _prefs?.remove(_kProfileComplete);
+    // Sessão Google em background com timeout — se falhar, ignora (já saímos
+    // localmente).
+    if (wasGoogle) {
+      try {
+        await _repo.signOut().timeout(const Duration(seconds: 5));
+      } catch (_) {
+        // Ignora falhas/timeout; o estado local já está limpo.
+      }
+    }
+    _signingOut = false;
     notifyListeners();
   }
 

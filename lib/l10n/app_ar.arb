@@ -232,5 +232,23 @@
   "profileFieldRole": "المنصب",
   "completeProfileTitle": "أكمل ملفك الشخصي",
   "completeProfileSubtitle": "بضع بيانات إضافية — الهاتف والشركة والمنصب.",
-  "profileSaveLater": "إكمال لاحقًا"
+  "profileSaveLater": "إكمال لاحقًا",
+
+  "welcomeBackTitle": "مرحبًا بعودتك",
+  "welcomeBackHello": "مرحبًا، {name}!",
+  "@welcomeBackHello": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "welcomeBackContinue": "متابعة",
+  "welcomeBackSwitch": "لست أنت؟ استخدم حسابًا آخر",
+  "welcomeBackSwitchTitle": "استخدام حساب آخر؟",
+  "welcomeBackSwitchBody": "سيؤدي هذا إلى حذف البيانات المحفوظة على هذا الهاتف. ستحتاج إلى التسجيل مرة أخرى.",
+  "welcomeBackSwitchConfirm": "حذف ومتابعة",
+
+  "profileSectionPersonal": "المعلومات الشخصية",
+  "profileSectionPreferences": "التفضيلات",
+  "profileSectionLegal": "قانوني",
+  "profileFieldEmail": "البريد الإلكتروني",
+
+  "loginPrivacyFooter": "بياناتك تبقى على هذا الجهاز."
 }
