@@ -47,7 +47,11 @@ flutter:
 # Ícone da app (Android + web) gerado a partir da logo GGPEN.
 flutter_launcher_icons:
   android: "ic_launcher"
-  ios: false
+  ios: true
+  # Ícones iOS não podem ter transparência (a App Store rejeita) — achata a
+  # logo sobre fundo branco.
+  remove_alpha_ios: true
+  background_color_ios: "#FFFFFF"
   image_path: "assets/logo_ggpen.png"
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/logo_ggpen.png"
