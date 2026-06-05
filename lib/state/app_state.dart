@@ -2,10 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
+import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/ggpen_repository.dart';
+import '../models/activity.dart';
+import '../models/notification_item.dart';
+import '../services/notification_service.dart';
+import '../services/reminder_scheduler.dart';
 
 /// Estado da sessão para decidir o ecrã raiz.
 /// - loggedOut: sem sessão e sem perfil local guardado
@@ -20,6 +25,8 @@ enum AuthStatus { loggedOut, welcomeBack, checking, needsProfile, ready }
 class AppState extends ChangeNotifier {
   static const _kFavorites = 'favorites';
   static const _kReminders = 'reminders';
+  static const _kWatchedSig = 'watchedSig';
+  static const _kInbox = 'noticeInbox';
   static const _kLocale = 'locale';
   static const _kLeadMinutes = 'reminderLeadMinutes';
   static const _kLocalProfile = 'localProfile';
@@ -51,6 +58,13 @@ class AppState extends ChangeNotifier {
 
   final Set<String> _favorites = {};
   final Set<String> _reminders = {};
+  /// Assinatura ("inicioMs|local") de cada sessão na biblioteca (favoritos).
+  /// Permite detectar quando o organizador muda o horário/local e avisar — para
+  /// QUALQUER sessão guardada, não só as que têm lembrete (sino).
+  final Map<String, String> _watchedSig = {};
+  /// Histórico persistente de notificações (mais recente primeiro). Acumula
+  /// todos os avisos — incluindo "horário alterado" — com estado lida/não-lida.
+  final List<StoredNotice> _inbox = [];
   Locale? _locale;
   int _reminderLeadMinutes = 15;
   Map<String, String>? _localProfile;
@@ -150,6 +164,32 @@ class AppState extends ChangeNotifier {
     _prefs = prefs;
     _favorites.addAll(prefs.getStringList(_kFavorites) ?? const []);
     _reminders.addAll(prefs.getStringList(_kReminders) ?? const []);
+    final sigStr = prefs.getString(_kWatchedSig);
+    if (sigStr != null && sigStr.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(sigStr);
+        if (decoded is Map) {
+          decoded.forEach((k, v) => _watchedSig[k.toString()] = '$v');
+        }
+      } catch (_) {
+        // ignora mapa corrompido
+      }
+    }
+    final inboxStr = prefs.getString(_kInbox);
+    if (inboxStr != null && inboxStr.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(inboxStr);
+        if (decoded is List) {
+          for (final e in decoded) {
+            if (e is Map) {
+              _inbox.add(StoredNotice.fromJson(Map<String, dynamic>.from(e)));
+            }
+          }
+        }
+      } catch (_) {
+        // ignora histórico corrompido
+      }
+    }
     final code = prefs.getString(_kLocale);
     if (code != null && code.isNotEmpty) {
       _locale = Locale(code);
@@ -196,25 +236,204 @@ class AppState extends ChangeNotifier {
   bool isFavorite(String id) => _favorites.contains(id);
   bool isReminder(String id) => _reminders.contains(id);
 
-  void toggleFavorite(String id) {
+  /// Assinatura observada de uma sessão: hora de início + local. Se qualquer um
+  /// mudar no backend, avisamos o utilizador.
+  String _sigOf(Activity a) =>
+      '${a.start.millisecondsSinceEpoch}|${a.location}';
+
+  void toggleFavorite(Activity activity) {
+    final id = activity.id;
     if (_favorites.remove(id)) {
-      _reminders.remove(id);
+      // Sai da biblioteca: deixa de ser observado e cancela o lembrete.
+      _watchedSig.remove(id);
+      if (_reminders.remove(id)) {
+        NotificationService.instance.cancelReminder(id);
+      }
     } else {
       _favorites.add(id);
+      _watchedSig[id] = _sigOf(activity); // baseline para detectar mudanças
     }
     _persistLists();
     notifyListeners();
   }
 
-  void toggleReminder(String id) {
+  /// Liga/desliga o lembrete de uma sessão e agenda/cancela a notificação local
+  /// no telemóvel. Centralizado aqui para ser consistente em todos os ecrãs.
+  void toggleReminder(Activity activity, AppLocalizations l) {
+    final id = activity.id;
     if (_reminders.remove(id)) {
-      // removido
+      // Tira só o sino; a sessão continua na biblioteca (continua observada).
+      NotificationService.instance.cancelReminder(id);
     } else {
       _reminders.add(id);
       _favorites.add(id);
+      _watchedSig[id] = _sigOf(activity);
+      scheduleReminderFor(l, activity, _reminderLeadMinutes);
     }
     _persistLists();
     notifyListeners();
+  }
+
+  // ---- Histórico de notificações (inbox) ----
+  static const int _inboxCap = 200;
+
+  /// Histórico, mais recente primeiro.
+  List<StoredNotice> get notifications => List.unmodifiable(_inbox);
+
+  /// Quantas ainda não foram lidas (alimenta o badge do sino).
+  int get unreadCount => _inbox.where((n) => !n.read).length;
+
+  /// Adiciona um aviso ao histórico se ainda não existir (dedup por [id]).
+  /// Devolve true se foi mesmo adicionado. NÃO notifica — o chamador decide.
+  bool _addNotice(String id, String title, String body, NotificationKind kind,
+      {int? timeMs}) {
+    if (_inbox.any((n) => n.id == id)) return false;
+    _inbox.insert(
+      0,
+      StoredNotice(
+        id: id,
+        title: title,
+        body: body,
+        timeMs: timeMs ?? DateTime.now().millisecondsSinceEpoch,
+        kind: kind,
+        read: false,
+      ),
+    );
+    if (_inbox.length > _inboxCap) _inbox.removeRange(_inboxCap, _inbox.length);
+    return true;
+  }
+
+  /// Marca todas como lidas (chamado ao abrir a aba de Avisos). Limpa o badge.
+  void markNotificationsRead() {
+    var changed = false;
+    for (final n in _inbox) {
+      if (!n.read) {
+        n.read = true;
+        changed = true;
+      }
+    }
+    if (changed) {
+      _persistInbox();
+      notifyListeners();
+    }
+  }
+
+  /// Mantém o histórico em dia com o estado das sessões GUARDADAS: boas-vindas
+  /// (uma vez), "começa em breve" e "a decorrer". Deduplicado — cada evento
+  /// entra uma só vez e fica lá. Chamado periodicamente pelo ecrã inicial.
+  void syncSessionAlerts(AppLocalizations l, List<Activity> activities) {
+    var changed = _addNotice(
+        'welcome', l.notifWelcomeTitle, l.notifWelcomeBody, NotificationKind.aviso);
+    final now = DateTime.now();
+    final lead = Duration(minutes: _reminderLeadMinutes);
+    for (final a in activities) {
+      if (!_favorites.contains(a.id)) continue;
+      final status = a.statusAt(now);
+      if (status == ActivityStatus.live) {
+        if (_addNotice(
+            'live-${a.id}-${a.start.millisecondsSinceEpoch}',
+            l.notifLiveTitle(a.title),
+            l.notifLiveBody(a.location),
+            NotificationKind.inicio,
+            timeMs: a.start.millisecondsSinceEpoch)) {
+          changed = true;
+        }
+      } else {
+        final fire = a.start.subtract(lead);
+        if (!now.isBefore(fire) && now.isBefore(a.start)) {
+          if (_addNotice(
+              'soon-${a.id}-${fire.millisecondsSinceEpoch}',
+              l.notifStartingSoonTitle(a.title),
+              l.notifStartingSoonBody(a.timeRange, a.location),
+              NotificationKind.inicio,
+              timeMs: fire.millisecondsSinceEpoch)) {
+            changed = true;
+          }
+        }
+      }
+    }
+    if (changed) {
+      _persistInbox();
+      notifyListeners();
+    }
+  }
+
+  void _persistInbox() {
+    _prefs?.setString(
+        _kInbox, jsonEncode(_inbox.map((n) => n.toJson()).toList()));
+  }
+
+  // Assinatura da última agenda reconciliada (ids + horas). Evita repetir.
+  int _lastReconcileSig = 0;
+
+  /// Chamado sempre que a agenda muda (arranque, pull-to-refresh ou tempo real).
+  /// Constrói a sua própria localização a partir do idioma guardado — assim
+  /// funciona em qualquer ecrã, sem depender de um `BuildContext`.
+  Future<void> onActivitiesChanged(List<Activity> activities) async {
+    var sig = 0;
+    for (final a in activities) {
+      sig ^= Object.hash(
+          a.id, a.start.millisecondsSinceEpoch, a.location);
+    }
+    if (sig == _lastReconcileSig) return;
+    _lastReconcileSig = sig;
+    if (_favorites.isEmpty) return; // ninguém para avisar
+    final l = await AppLocalizations.delegate.load(_locale ?? const Locale('pt'));
+    await reconcileReminders(l, activities);
+  }
+
+  /// Verifica, sempre que a agenda recarrega, se alguma sessão GUARDADA na
+  /// biblioteca mudou (horário ou local). Se mudou, avisa o utilizador de
+  /// imediato; se tiver lembrete (sino), também reagenda a notificação. Sessões
+  /// vistas pela 1.ª vez só guardam a baseline (sem aviso).
+  Future<void> reconcileReminders(
+      AppLocalizations l, List<Activity> activities) async {
+    var changed = false;
+    final byId = {for (final a in activities) a.id: a};
+    for (final id in _favorites) {
+      final a = byId[id];
+      if (a == null) continue; // sessão não está nesta agenda
+      final cur = _sigOf(a);
+      final prev = _watchedSig[id];
+      if (prev == null) {
+        _watchedSig[id] = cur; // primeira vez — só regista a baseline
+        changed = true;
+        continue;
+      }
+      if (prev == cur) continue; // nada mudou
+
+      final curStart = a.start.millisecondsSinceEpoch;
+      final prevStart = int.tryParse(prev.split('|').first);
+      final timeChanged = prevStart != curStart;
+      if (timeChanged) {
+        // Horário mudou: se tiver sino, reagenda o lembrete pré-início.
+        if (_reminders.contains(id)) {
+          await NotificationService.instance.cancelReminder(id);
+          await scheduleReminderFor(l, a, _reminderLeadMinutes);
+        }
+        final title = l.notifTimeChangedTitle(a.title);
+        final body = l.notifTimeChangedBody(a.timeRange, a.location);
+        await NotificationService.instance.showNow(
+            key: 'changed-$id', title: title, body: body);
+        // Cada mudança distinta fica no histórico (id único por nova hora).
+        _addNotice('changed-$id-$curStart', title, body, NotificationKind.mudanca);
+      } else {
+        // Outra mudança (ex.: local da sessão).
+        final title = l.notifSessionUpdatedTitle(a.title);
+        final body = l.notifTimeChangedBody(a.timeRange, a.location);
+        await NotificationService.instance.showNow(
+            key: 'updated-$id-${cur.hashCode}', title: title, body: body);
+        _addNotice(
+            'updated-$id-${cur.hashCode}', title, body, NotificationKind.mudanca);
+      }
+      _watchedSig[id] = cur;
+      changed = true;
+    }
+    if (changed) {
+      _persistLists();
+      _persistInbox();
+      notifyListeners(); // atualiza o badge
+    }
   }
 
   // ---- Autenticação ----
@@ -226,14 +445,14 @@ class AppState extends ChangeNotifier {
   Future<void> signUpLocal({
     required String name,
     required String email,
-    required String phone,
+    String? phone,
     required String company,
     required String role,
   }) async {
     _localProfile = {
       'name': name.trim(),
       'email': email.trim(),
-      'phone': phone.trim(),
+      'phone': (phone ?? '').trim(),
       'company': company.trim(),
       'role': role.trim(),
     };
@@ -282,16 +501,20 @@ class AppState extends ChangeNotifier {
 
   /// Grava os campos extra (telefone, empresa, cargo) na tabela `profiles`.
   Future<void> saveProfileExtra({
-    required String telefone,
+    String? telefone,
     required String empresa,
     required String cargo,
   }) async {
     await _repo.updateMyProfile(
-      telefone: telefone.trim(),
+      telefone: telefone?.trim(),
       empresa: empresa.trim(),
       cargo: cargo.trim(),
     );
     await _checkProfile();
+    // Campos são opcionais: depois de submeter (mesmo vazios) não voltar a pedir.
+    _profileCompleteCached = true;
+    await _prefs?.setBool(_kProfileComplete, true);
+    notifyListeners();
   }
 
   /// Permite avançar sem completar agora (volta a perguntar no próximo arranque).
@@ -334,6 +557,7 @@ class AppState extends ChangeNotifier {
   void _persistLists() {
     _prefs?.setStringList(_kFavorites, _favorites.toList());
     _prefs?.setStringList(_kReminders, _reminders.toList());
+    _prefs?.setString(_kWatchedSig, jsonEncode(_watchedSig));
   }
 
   @override

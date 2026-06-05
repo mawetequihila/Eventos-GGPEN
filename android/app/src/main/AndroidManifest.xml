@@ -1,11 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Acesso à internet (Supabase). Obrigatório no release: o Flutter só a
+         adiciona automaticamente no debug, por isso o APK release ficava sem rede. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Notificações locais (lembretes de sessão) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
-        android:label="GGPEN Eventos"
+        android:label="GGPEN APP"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

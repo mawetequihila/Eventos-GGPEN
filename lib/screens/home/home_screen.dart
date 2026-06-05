@@ -89,20 +89,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final next = upcoming.isNotEmpty ? upcoming.first : null;
     final today = es.byDay(1);
 
-    // Contagem de notificações não-lidas (mesma lógica que NotificationsScreen).
-    final lead = Duration(minutes: state.reminderLeadMinutes);
-    var unread = 1; // boas-vindas sempre presente
-    for (final a in activities) {
-      final status = a.statusAt(now);
-      if (status == ActivityStatus.live) {
-        unread++;
-      } else {
-        final fire = a.start.subtract(lead);
-        if (!now.isBefore(fire) && now.isBefore(a.start)) {
-          unread++;
-        }
-      }
-    }
+    // Mantém o histórico de avisos em dia (boas-vindas, "começa em breve",
+    // "a decorrer") fora do build. O badge usa o nº de não-lidas persistido.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<AppState>().syncSessionAlerts(l, activities);
+    });
+    final unread = state.unreadCount;
 
     void openDetail(Activity a) => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ActivityDetailScreen(activity: a)));

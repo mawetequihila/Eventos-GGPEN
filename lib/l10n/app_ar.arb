@@ -3,7 +3,7 @@
 
   "navHome": "الرئيسية",
   "navAgenda": "الأجندة",
-  "navSpeakers": "المتحدثون",
+  "navSpeakers": "الضيوف",
   "navGgpen": "GGPEN",
   "drawerMyAgenda": "أجندتي",
   "drawerNotifications": "الإشعارات",
@@ -44,7 +44,10 @@
   "weekday3": "سبت",
 
   "linkCopied": "تم نسخ الرابط (تجريبي)",
-  "tabSpeakers": "المتحدثون",
+  "tabSpeakers": "المشاركون",
+  "roleModerators": "المشرفون",
+  "roleSpeakers": "المتحدثون",
+  "roleGuests": "الضيوف",
   "tabQa": "الأسئلة",
   "remindBeforeStart": "ذكّرني قبل البدء",
   "inMyAgenda": "في أجندتي",
@@ -87,7 +90,7 @@
   "pointCatering": "المطاعم",
   "pointParking": "موقف السيارات",
 
-  "speakersTitle": "المتحدثون",
+  "speakersTitle": "الضيوف",
   "speakersConfirmed": "{count} مؤكَّدون",
   "sessionsCount": "{count, plural, =1{جلسة واحدة} other{{count} جلسات}}",
 
@@ -181,6 +184,9 @@
   "notifWelcomeBody": "استكشف الأجندة واحفظ الجلسات التي لا تريد تفويتها.",
   "notifStartingSoonTitle": "{title} تبدأ قريباً",
   "notifStartingSoonBody": "تبدأ في {time} · {location}",
+  "notifTimeChangedTitle": "تغيّر الموعد: {title}",
+  "notifTimeChangedBody": "الآن في {time} · {location}",
+  "notifSessionUpdatedTitle": "تم تحديث الجلسة: {title}",
   "noPhotos": "لا توجد صور بعد.",
 
   "reminderLeadTitle": "مهلة التذكير",
@@ -202,9 +208,9 @@
   "authWelcomeTitle": "مرحبًا بكم في GGPEN",
   "authWelcomeSubtitle": "تابعوا مشاركتنا في Angotic 2026.",
   "authContinueWithGoogle": "المتابعة باستخدام Google",
-  "authCreateAccount": "إنشاء حساب بالبريد الإلكتروني",
+  "authCreateAccount": "التسجيل",
   "authOr": "أو",
-  "signupTitle": "إنشاء حسابك",
+  "signupTitle": "التسجيل",
   "signupHelper": "املأ بياناتك لتلقي التذكيرات والمستجدات.",
   "signupNameLabel": "الاسم الكامل",
   "signupEmailLabel": "البريد الإلكتروني",

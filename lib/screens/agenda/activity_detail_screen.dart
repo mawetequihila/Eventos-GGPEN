@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,8 +10,6 @@ import '../../data/ggpen_models.dart' as sb;
 import '../../data/ggpen_repository.dart';
 import '../../models/activity.dart';
 import '../../models/speaker.dart';
-import '../../services/notification_service.dart';
-import '../../services/reminder_scheduler.dart';
 import '../../state/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -31,18 +30,11 @@ class ActivityDetailScreen extends StatefulWidget {
 class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
   int _tab = 0;
 
-  /// Alterna o lembrete e agenda/cancela a notificação local (telemóvel),
-  /// para tocar ~10 min antes da sessão começar.
+  /// Alterna o lembrete; o agendamento/cancelamento da notificação local
+  /// (telemóvel) é tratado centralmente em [AppState.toggleReminder].
   void _toggleReminder() {
-    final state = context.read<AppState>();
     final l = AppLocalizations.of(context);
-    final a = widget.activity;
-    state.toggleReminder(a.id);
-    if (state.isReminder(a.id)) {
-      scheduleReminderFor(l, a, state.reminderLeadMinutes);
-    } else {
-      NotificationService.instance.cancelReminder(a.id);
-    }
+    context.read<AppState>().toggleReminder(widget.activity, l);
   }
 
   @override
@@ -63,7 +55,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
               isFav ? Icons.bookmark_rounded : LucideIcons.bookmark,
               color: isFav ? AppColors.accent2 : Colors.white,
             ),
-            onPressed: () => context.read<AppState>().toggleFavorite(activity.id),
+            onPressed: () => context.read<AppState>().toggleFavorite(activity),
           ),
         ],
       ),
@@ -159,7 +151,7 @@ class _ActivityDetailScreenState extends State<ActivityDetailScreen> {
                 ),
               FilledButton.icon(
                 onPressed: () =>
-                    context.read<AppState>().toggleFavorite(activity.id),
+                    context.read<AppState>().toggleFavorite(activity),
                 icon: Icon(isFav ? LucideIcons.check : LucideIcons.plus, size: 18),
                 label: Text(isFav ? l.inMyAgenda : l.addToMyAgenda),
               ),
@@ -266,6 +258,55 @@ class _SpeakersTab extends StatelessWidget {
             ),
           );
         }
+        // Agrupa por papel: Moderadores, Oradores, Convidados (outros papéis).
+        final moderators = <sb.Speaker>[];
+        final oradores = <sb.Speaker>[];
+        final convidados = <sb.Speaker>[];
+        for (final s in speakers) {
+          switch (s.papel) {
+            case 'moderador':
+              moderators.add(s);
+              break;
+            case 'orador':
+              oradores.add(s);
+              break;
+            default:
+              convidados.add(s);
+          }
+        }
+
+        // Índice global de cor (mantém variedade entre secções).
+        var colorIndex = 0;
+        Widget section(String title, List<sb.Speaker> list) {
+          if (list.isEmpty) return const SizedBox.shrink();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title.toUpperCase(),
+                  style: AppTheme.overline(
+                      AppColors.navy.withValues(alpha: 0.45))),
+              const SizedBox(height: 10),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.74,
+                ),
+                itemCount: list.length,
+                itemBuilder: (_, i) => _SpeakerCard(
+                  speaker: list[i],
+                  color: _palette[(colorIndex++) % _palette.length],
+                  muted: muted,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          );
+        }
+
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -279,22 +320,9 @@ class _SpeakersTab extends StatelessWidget {
                       color: AppColors.navy.withValues(alpha: 0.55)),
                 ),
                 const SizedBox(height: 14),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.74,
-                  ),
-                  itemCount: speakers.length,
-                  itemBuilder: (_, i) => _SpeakerCard(
-                    speaker: speakers[i],
-                    color: _palette[i % _palette.length],
-                    muted: muted,
-                  ),
-                ),
+                section(l.roleModerators, moderators),
+                section(l.roleSpeakers, oradores),
+                section(l.roleGuests, convidados),
               ],
             ),
           ),
@@ -340,6 +368,8 @@ class _SpeakerCard extends StatelessWidget {
               role: fullRole,
               bio: speaker.bio,
               avatarUrl: speaker.avatarUrl,
+              country: speaker.pais,
+              region: speaker.origem,
               sessions: count,
               color: color,
             ),
@@ -363,7 +393,10 @@ class _SpeakerCard extends StatelessWidget {
                   CircleAvatar(
                     radius: 32,
                     backgroundColor: color,
-                    backgroundImage: hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
+                    backgroundImage: hasPhoto
+                        ? CachedNetworkImageProvider(speaker.avatarUrl!,
+                            maxWidth: 200)
+                        : null,
                     child: hasPhoto
                         ? null
                         : Text(_initialsOf(speaker.nome),
@@ -534,10 +567,15 @@ class _PhotosTab extends StatelessWidget {
               tag: 'photo-$activityId-$i',
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
-                child: Image.network(
-                  photos[i],
+                child: CachedNetworkImage(
+                  imageUrl: photos[i],
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  // Miniatura: decodifica em baixa resolução (poupa memória e
+                  // acelera). A foto inteira só é decodificada no visualizador.
+                  memCacheWidth: 400,
+                  fadeInDuration: const Duration(milliseconds: 150),
+                  placeholder: (_, __) => Container(color: AppColors.line),
+                  errorWidget: (_, __, ___) => Container(
                     color: AppColors.line,
                     child: Icon(LucideIcons.imageOff, color: muted),
                   ),
@@ -602,18 +640,18 @@ class _PhotoViewerState extends State<_PhotoViewer> {
                   child: InteractiveViewer(
                     minScale: 1,
                     maxScale: 5,
-                    child: Image.network(
-                      widget.photos[i],
+                    child: CachedNetworkImage(
+                      imageUrl: widget.photos[i],
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
+                      // Reutiliza o ficheiro já em cache da miniatura — abre
+                      // praticamente instantâneo na maioria dos casos.
+                      errorWidget: (_, __, ___) => const Icon(
                           LucideIcons.imageOff,
                           color: Colors.white54,
                           size: 48),
-                      loadingBuilder: (_, child, progress) => progress == null
-                          ? child
-                          : const Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.white54)),
+                      placeholder: (_, __) => const Center(
+                          child: CircularProgressIndicator(
+                              color: Colors.white54)),
                     ),
                   ),
                 ),

@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'data/ggpen_repository.dart';
 import 'services/notification_service.dart';
+import 'services/push_service.dart';
 import 'state/app_state.dart';
 import 'state/event_state.dart';
 
@@ -22,6 +23,10 @@ Future<void> main() async {
   // de permissão e bloquearia o arranque até o utilizador responder.
   unawaited(NotificationService.instance.init());
 
+  // Push (FCM). A init é defensiva — sem Firebase configurado não faz nada
+  // (ver doc/FCM_SETUP.md). Regista o handler de background internamente.
+  unawaited(PushService.instance.init());
+
   final repo = GgpenRepository();
 
   final appState = AppState(repo);
@@ -29,6 +34,12 @@ Future<void> main() async {
 
   // Carrega evento/atividades/oradores em background; a UI mostra loading.
   final eventState = EventState(repo)..load();
+
+  // Quando a agenda muda (incl. em tempo real), reconcilia os lembretes: se o
+  // horário de uma sessão marcada mudou, reagenda e avisa o utilizador.
+  eventState.addListener(
+    () => appState.onActivitiesChanged(eventState.activities),
+  );
 
   runApp(
     MultiProvider(

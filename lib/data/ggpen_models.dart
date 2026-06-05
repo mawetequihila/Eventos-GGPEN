@@ -26,8 +26,12 @@ class AppEvent {
         descricao: m['descricao'] as String?,
         bannerUrl: m['banner_url'] as String?,
         local: m['local'] as String?,
-        inicio: m['inicio'] != null ? DateTime.parse(m['inicio'] as String) : null,
-        fim: m['fim'] != null ? DateTime.parse(m['fim'] as String) : null,
+        inicio: m['inicio'] != null
+            ? DateTime.parse(m['inicio'] as String).toLocal()
+            : null,
+        fim: m['fim'] != null
+            ? DateTime.parse(m['fim'] as String).toLocal()
+            : null,
       );
 }
 
@@ -59,9 +63,16 @@ class Activity {
         tipo: m['tipo'] as String,
         descricao: m['descricao'] as String?,
         local: m['local'] as String?,
-        inicio: DateTime.parse(m['inicio'] as String),
-        fim: m['fim'] != null ? DateTime.parse(m['fim'] as String) : null,
+        inicio: _wallClock(m['inicio'] as String),
+        fim: m['fim'] != null ? _wallClock(m['fim'] as String) : null,
       );
+
+  /// Converte o instante guardado (timestamptz do Supabase) para a hora LOCAL
+  /// do dispositivo — em Angola, UTC+1. Assim a hora mostrada e a contagem
+  /// decrescente coincidem com o painel de administração (que também formata na
+  /// hora local). NÃO usar `.toUtc()` aqui: isso descartava o fuso e mostrava a
+  /// hora 1h mais cedo do que o organizador definiu.
+  static DateTime _wallClock(String s) => DateTime.parse(s).toLocal();
 }
 
 class Speaker {
@@ -70,7 +81,9 @@ class Speaker {
   final String? organizacao;
   final String? bio;
   final String? avatarUrl;
-  final String papel; // 'orador' | 'moderador' (vem da ligacao activity_speakers)
+  final String? pais; // país do orador (definido no painel)
+  final String? origem; // região/origem da pessoa (definido no painel)
+  final String papel; // 'orador' | 'moderador' | 'convidado' (da ligacao activity_speakers)
   final int? ordem; // posicao definida no painel (menor = primeiro)
 
   Speaker({
@@ -79,6 +92,8 @@ class Speaker {
     this.organizacao,
     this.bio,
     this.avatarUrl,
+    this.pais,
+    this.origem,
     this.papel = 'orador',
     this.ordem,
   });
@@ -89,6 +104,8 @@ class Speaker {
         organizacao: m['organizacao'] as String?,
         bio: m['bio'] as String?,
         avatarUrl: m['avatar_url'] as String?,
+        pais: m['pais'] as String?,
+        origem: m['origem'] as String?,
         papel: papel,
         ordem: (m['ordem'] as num?)?.toInt(),
       );

@@ -3,7 +3,7 @@
 
   "navHome": "Home",
   "navAgenda": "Agenda",
-  "navSpeakers": "Speakers",
+  "navSpeakers": "Guests",
   "navGgpen": "GGPEN",
   "drawerMyAgenda": "My Agenda",
   "drawerNotifications": "Notifications",
@@ -57,7 +57,10 @@
   "weekday3": "Sat",
 
   "linkCopied": "Link copied (demo)",
-  "tabSpeakers": "Speakers",
+  "tabSpeakers": "Participants",
+  "roleModerators": "Moderators",
+  "roleSpeakers": "Speakers",
+  "roleGuests": "Guests",
   "tabQa": "Questions",
   "remindBeforeStart": "Remind me before it starts",
   "inMyAgenda": "In my agenda",
@@ -103,7 +106,7 @@
   "pointCatering": "Catering",
   "pointParking": "Parking",
 
-  "speakersTitle": "Speakers",
+  "speakersTitle": "Guests",
   "speakersConfirmed": "{count} confirmed",
   "@speakersConfirmed": {
     "placeholders": { "count": { "type": "int" } }
@@ -227,6 +230,21 @@
       "location": { "type": "String" }
     }
   },
+  "notifTimeChangedTitle": "Time changed: {title}",
+  "@notifTimeChangedTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "notifTimeChangedBody": "Now at {time} · {location}",
+  "@notifTimeChangedBody": {
+    "placeholders": {
+      "time": { "type": "String" },
+      "location": { "type": "String" }
+    }
+  },
+  "notifSessionUpdatedTitle": "Session updated: {title}",
+  "@notifSessionUpdatedTitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
   "noPhotos": "No photos yet.",
 
   "reminderLeadTitle": "Reminder lead time",
@@ -257,9 +275,9 @@
   "authWelcomeTitle": "Welcome to GGPEN",
   "authWelcomeSubtitle": "Follow our participation at Angotic 2026.",
   "authContinueWithGoogle": "Continue with Google",
-  "authCreateAccount": "Create account with email",
+  "authCreateAccount": "Sign up",
   "authOr": "or",
-  "signupTitle": "Create your account",
+  "signupTitle": "Sign up",
   "signupHelper": "Fill in your details to receive reminders and updates.",
   "signupNameLabel": "Full name",
   "signupEmailLabel": "Email",

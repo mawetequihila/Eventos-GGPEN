@@ -8,6 +8,8 @@ class Speaker {
   final String? id;
   final String? bio;
   final String? avatarUrl;
+  final String? country;
+  final String? region;
 
   const Speaker({
     required this.name,
@@ -17,6 +19,8 @@ class Speaker {
     this.id,
     this.bio,
     this.avatarUrl,
+    this.country,
+    this.region,
   });
 
   String get initials {

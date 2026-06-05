@@ -1,6 +1,6 @@
 {
-    "name": "GGPEN Eventos",
-    "short_name": "GGPEN Eventos",
+    "name": "GGPEN APP",
+    "short_name": "GGPEN APP",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",

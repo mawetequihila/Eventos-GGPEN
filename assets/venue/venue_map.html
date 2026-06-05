@@ -217,11 +217,18 @@ const VENUE = {
 
 const APP = document.getElementById('app');
 const W0 = innerWidth, H0 = innerHeight;
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+// Perf mobile: sem antialias (caro em GPU móvel), pixelRatio limitado a 1.5
+// (em telemóveis 3x evita renderizar 4–9x os pixéis) e preferência por GPU.
+const renderer = new THREE.WebGLRenderer({ antialias:false, powerPreference:'high-performance' });
 renderer.setSize(W0, H0);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// Sombras "duras" (mais baratas que PCFSoft) e — sobretudo — calculadas só uma
+// vez: o sol é estático, por isso não há razão para refazer o shadow map a cada
+// frame. autoUpdate=false + needsUpdate (uma vez no 1.º frame) poupa imenso.
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.shadowMap.autoUpdate = false;
+renderer.shadowMap.needsUpdate = true;
 renderer.outputEncoding = THREE.sRGBEncoding;
 APP.appendChild(renderer.domElement);
 
@@ -232,7 +239,7 @@ const camera = new THREE.PerspectiveCamera(45, W0/H0, 0.5, 2000);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb0a8, 0.85));
 const sun = new THREE.DirectionalLight(0xfff4e3, 1.05);
 sun.position.set(120, 210, 90); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(1024, 1024);
 const S = 200;
 Object.assign(sun.shadow.camera, { left:-S, right:S, top:S, bottom:-S, near:40, far:600 });
 sun.shadow.bias = -0.0004; scene.add(sun);
@@ -545,6 +552,10 @@ commitBooths();
 const ctrl = { target:new THREE.Vector3(14,4,4), theta:0.8, phi:0.92, radius:262,
   minR:35, maxR:520, minPhi:0.18, maxPhi:1.45 };
 let mode='orbit';
+// Render sob-demanda: só desenhamos quando a câmara muda ou há animação a
+// decorrer. Em repouso o WebGL fica parado (sem isto, renderizava 60fps sempre).
+let needsRender=true;
+function invalidate(){ needsRender=true; }
 function applyCam(){
   const r=ctrl.radius, p=ctrl.phi, t=ctrl.theta;
   camera.position.set(
@@ -552,6 +563,7 @@ function applyCam(){
     ctrl.target.y + r*Math.cos(p),
     ctrl.target.z + r*Math.sin(p)*Math.cos(t));
   camera.lookAt(ctrl.target);
+  needsRender=true;
 }
 applyCam();
 
@@ -974,14 +986,17 @@ const clock=new THREE.Clock();
 function loop(){
   requestAnimationFrame(loop);
   const dt=Math.min(clock.getDelta(),0.05);
-  if(mode==='walk'){ updateWalk(dt); drawMinimap(); }
-  else if(intro>0){ intro-=0.012; ctrl.theta+=intro*0.01; applyCam(); }
+  let animating=false;
+  if(mode==='walk'){ updateWalk(dt); drawMinimap(); animating=true; }
+  else if(intro>0){ intro-=0.012; ctrl.theta+=intro*0.01; applyCam(); animating=true; }
   if(routeState.curve && routeState.comets.length){
     routeState.t=(routeState.t+dt*0.05)%1;
     const n=routeState.comets.length;
     routeState.comets.forEach((c,i)=>{ const tt=(routeState.t + i/n)%1; c.position.copy(routeState.curve.getPoint(tt)); c.position.y=0.7; });
+    animating=true;
   }
-  renderer.render(scene,camera);
+  // Só desenha se a câmara mudou (needsRender) ou se algo está a animar.
+  if(needsRender || animating){ renderer.render(scene,camera); needsRender=false; }
 }
 loop();
 

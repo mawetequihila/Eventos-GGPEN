@@ -15,7 +15,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navAgenda => 'الأجندة';
 
   @override
-  String get navSpeakers => 'المتحدثون';
+  String get navSpeakers => 'الضيوف';
 
   @override
   String get navGgpen => 'GGPEN';
@@ -133,7 +133,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get linkCopied => 'تم نسخ الرابط (تجريبي)';
 
   @override
-  String get tabSpeakers => 'المتحدثون';
+  String get tabSpeakers => 'المشاركون';
+
+  @override
+  String get roleModerators => 'المشرفون';
+
+  @override
+  String get roleSpeakers => 'المتحدثون';
+
+  @override
+  String get roleGuests => 'الضيوف';
 
   @override
   String get tabQa => 'الأسئلة';
@@ -255,7 +264,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pointParking => 'موقف السيارات';
 
   @override
-  String get speakersTitle => 'المتحدثون';
+  String get speakersTitle => 'الضيوف';
 
   @override
   String speakersConfirmed(int count) {
@@ -528,6 +537,21 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String notifTimeChangedTitle(String title) {
+    return 'تغيّر الموعد: $title';
+  }
+
+  @override
+  String notifTimeChangedBody(String time, String location) {
+    return 'الآن في $time · $location';
+  }
+
+  @override
+  String notifSessionUpdatedTitle(String title) {
+    return 'تم تحديث الجلسة: $title';
+  }
+
+  @override
   String get noPhotos => 'لا توجد صور بعد.';
 
   @override
@@ -588,13 +612,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authContinueWithGoogle => 'المتابعة باستخدام Google';
 
   @override
-  String get authCreateAccount => 'إنشاء حساب بالبريد الإلكتروني';
+  String get authCreateAccount => 'التسجيل';
 
   @override
   String get authOr => 'أو';
 
   @override
-  String get signupTitle => 'إنشاء حسابك';
+  String get signupTitle => 'التسجيل';
 
   @override
   String get signupHelper => 'املأ بياناتك لتلقي التذكيرات والمستجدات.';

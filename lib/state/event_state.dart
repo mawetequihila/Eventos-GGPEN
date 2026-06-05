@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/ggpen_models.dart' as sb;
@@ -39,12 +41,29 @@ class EventState extends ChangeNotifier {
 
   bool get isReady => status == LoadStatus.ready;
 
+  // Subscrição em tempo real às atividades (deteta mudanças de horário feitas
+  // no painel enquanto a app está aberta).
+  StreamSubscription<List<sb.Activity>>? _activitiesSub;
+  bool _realtimeOn = false;
+
+  /// Liga a escuta em tempo real às atividades deste evento. Ao mudar algo no
+  /// backend, recarrega a agenda — o que dispara a reconciliação de lembretes.
+  void _listenActivities(String eventId) {
+    if (_realtimeOn) return;
+    _realtimeOn = true;
+    _activitiesSub = repo.watchActivities(eventId).skip(1).listen(
+      (_) => load(),
+      onError: (_) {/* ignora falhas de stream; o pull-to-refresh continua a servir */},
+    );
+  }
+
   Future<void> load() async {
     status = LoadStatus.loading;
     error = null;
     notifyListeners();
     try {
       final ev = await repo.getCurrentEvent();
+      _listenActivities(ev.id); // tempo real (uma vez)
       final acts = await repo.getActivities(ev.id);
       final counts = await repo.getSpeakerSessionCounts();
       final allSpeakers = await repo.getAllSpeakers();
@@ -89,6 +108,12 @@ class EventState extends ChangeNotifier {
 
   int get dayCount => days.length;
 
+  @override
+  void dispose() {
+    _activitiesSub?.cancel();
+    super.dispose();
+  }
+
   DateTime? dateForDay(int day) =>
       (day >= 1 && day <= days.length) ? days[day - 1] : null;
 
@@ -114,6 +139,8 @@ class EventState extends ChangeNotifier {
         role: s.organizacao ?? '',
         bio: s.bio,
         avatarUrl: s.avatarUrl,
+        country: s.pais,
+        region: s.origem,
         sessions: sessions == 0 ? 1 : sessions,
         color: _palette[index % _palette.length],
       );

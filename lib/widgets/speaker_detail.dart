@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -6,6 +7,8 @@ import 'package:provider/provider.dart';
 import '../data/ggpen_models.dart' as sb;
 import '../data/ggpen_repository.dart';
 import '../models/speaker.dart';
+import '../screens/agenda/activity_detail_screen.dart';
+import '../state/event_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -24,6 +27,20 @@ class _SpeakerDetailDialog extends StatelessWidget {
 
   String _hhmm(DateTime d) =>
       '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+  /// Fecha o diálogo e abre o ecrã da actividade correspondente (procura a
+  /// versão já mapeada no EventState pelo id; ignora se ainda não carregou).
+  void _openSession(BuildContext context, sb.Activity a) {
+    final es = context.read<EventState>();
+    final match = es.activities.where((x) => x.id == a.id).toList();
+    if (match.isEmpty) return;
+    Navigator.of(context).pop(); // fecha o diálogo do orador
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ActivityDetailScreen(activity: match.first),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,26 +151,45 @@ class _SpeakerDetailDialog extends StatelessWidget {
                           else
                             ...sessions.map((a) => Padding(
                                   padding: const EdgeInsets.only(bottom: 8),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.bg,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border:
-                                          Border.all(color: AppColors.line),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(a.titulo,
-                                            style: AppTheme.cardTitle()),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
-                                          style: AppTheme.meta(muted),
+                                  child: Material(
+                                    color: AppColors.bg,
+                                    borderRadius: BorderRadius.circular(12),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: InkWell(
+                                      onTap: () => _openSession(context, a),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                              color: AppColors.line),
                                         ),
-                                      ],
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(a.titulo,
+                                                      style:
+                                                          AppTheme.cardTitle()),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    '${_hhmm(a.inicio)}${(a.local ?? '').isNotEmpty ? ' · ${a.local}' : ''}',
+                                                    style: AppTheme.meta(muted),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Icon(LucideIcons.chevronRight,
+                                                size: 18,
+                                                color: AppColors.navy
+                                                    .withValues(alpha: 0.4)),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 )),
@@ -186,6 +222,12 @@ class _Header extends StatelessWidget {
   final bool hasPhoto;
   const _Header({required this.speaker, required this.hasPhoto});
 
+  /// Origem apresentada: "região · país" (o que existir), ex.: "Cabinda · Angola".
+  String get _origin => [speaker.region, speaker.country]
+      .map((s) => (s ?? '').trim())
+      .where((s) => s.isNotEmpty)
+      .join(' · ');
+
   @override
   Widget build(BuildContext context) {
     final base = speaker.color;
@@ -209,8 +251,10 @@ class _Header extends StatelessWidget {
               CircleAvatar(
                 radius: 44,
                 backgroundColor: Colors.white.withValues(alpha: 0.22),
-                foregroundImage:
-                    hasPhoto ? NetworkImage(speaker.avatarUrl!) : null,
+                foregroundImage: hasPhoto
+                    ? CachedNetworkImageProvider(speaker.avatarUrl!,
+                        maxWidth: 280)
+                    : null,
                 child: hasPhoto
                     ? null
                     : Text(
@@ -236,6 +280,28 @@ class _Header extends StatelessWidget {
                       fontSize: 13,
                       height: 1.35,
                       color: Colors.white.withValues(alpha: 0.88)),
+                ),
+              ],
+              if (_origin.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(LucideIcons.mapPin,
+                        size: 13,
+                        color: Colors.white.withValues(alpha: 0.9)),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Text(
+                        _origin,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withValues(alpha: 0.95)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],

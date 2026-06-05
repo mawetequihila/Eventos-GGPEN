@@ -117,7 +117,7 @@ abstract class AppLocalizations {
   /// No description provided for @navSpeakers.
   ///
   /// In en, this message translates to:
-  /// **'Speakers'**
+  /// **'Guests'**
   String get navSpeakers;
 
   /// No description provided for @navGgpen.
@@ -345,8 +345,26 @@ abstract class AppLocalizations {
   /// No description provided for @tabSpeakers.
   ///
   /// In en, this message translates to:
-  /// **'Speakers'**
+  /// **'Participants'**
   String get tabSpeakers;
+
+  /// No description provided for @roleModerators.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderators'**
+  String get roleModerators;
+
+  /// No description provided for @roleSpeakers.
+  ///
+  /// In en, this message translates to:
+  /// **'Speakers'**
+  String get roleSpeakers;
+
+  /// No description provided for @roleGuests.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests'**
+  String get roleGuests;
 
   /// No description provided for @tabQa.
   ///
@@ -579,7 +597,7 @@ abstract class AppLocalizations {
   /// No description provided for @speakersTitle.
   ///
   /// In en, this message translates to:
-  /// **'Speakers'**
+  /// **'Guests'**
   String get speakersTitle;
 
   /// No description provided for @speakersConfirmed.
@@ -1068,6 +1086,24 @@ abstract class AppLocalizations {
   /// **'Starts at {time} · {location}'**
   String notifStartingSoonBody(String time, String location);
 
+  /// No description provided for @notifTimeChangedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time changed: {title}'**
+  String notifTimeChangedTitle(String title);
+
+  /// No description provided for @notifTimeChangedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Now at {time} · {location}'**
+  String notifTimeChangedBody(String time, String location);
+
+  /// No description provided for @notifSessionUpdatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session updated: {title}'**
+  String notifSessionUpdatedTitle(String title);
+
   /// No description provided for @noPhotos.
   ///
   /// In en, this message translates to:
@@ -1179,7 +1215,7 @@ abstract class AppLocalizations {
   /// No description provided for @authCreateAccount.
   ///
   /// In en, this message translates to:
-  /// **'Create account with email'**
+  /// **'Sign up'**
   String get authCreateAccount;
 
   /// No description provided for @authOr.
@@ -1191,7 +1227,7 @@ abstract class AppLocalizations {
   /// No description provided for @signupTitle.
   ///
   /// In en, this message translates to:
-  /// **'Create your account'**
+  /// **'Sign up'**
   String get signupTitle;
 
   /// No description provided for @signupHelper.

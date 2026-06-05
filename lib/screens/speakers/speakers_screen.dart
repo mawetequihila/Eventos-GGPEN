@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ggpen_angotic/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -104,6 +105,8 @@ class _SpeakerCardState extends State<_SpeakerCard> {
           role: speaker.role,
           bio: speaker.bio,
           avatarUrl: speaker.avatarUrl,
+          country: speaker.country,
+          region: speaker.region,
           sessions: count,
           color: speaker.color,
         );
@@ -126,7 +129,8 @@ class _SpeakerCardState extends State<_SpeakerCard> {
                     radius: 32,
                     backgroundColor: speaker.color,
                     backgroundImage: (speaker.avatarUrl ?? '').isNotEmpty
-                        ? NetworkImage(speaker.avatarUrl!)
+                        ? CachedNetworkImageProvider(speaker.avatarUrl!,
+                            maxWidth: 200)
                         : null,
                     child: (speaker.avatarUrl ?? '').isNotEmpty
                         ? null

@@ -74,6 +74,35 @@ class NotificationService {
     }
   }
 
+  /// Mostra uma notificação IMEDIATA (ex.: aviso de que o horário de uma
+  /// sessão mudou). [key] gera um id estável e distinto do lembrete agendado.
+  Future<void> showNow({
+    required String key,
+    required String title,
+    required String body,
+  }) async {
+    if (kIsWeb || !_ready) return;
+    try {
+      await _plugin.show(
+        id: (key.hashCode & 0x7fffffff) ^ 0x5f5f5f,
+        title: title,
+        body: body,
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channelId,
+            'Lembretes de sessão',
+            channelDescription: 'Avisa antes de uma sessão começar',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+            enableLights: true,
+          ),
+        ),
+      );
+    } catch (_) {}
+  }
+
   Future<void> cancelReminder(String activityId) async {
     if (kIsWeb || !_ready) return;
     try {

@@ -21,7 +21,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
-  final _phone = TextEditingController();
   final _company = TextEditingController();
   final _role = TextEditingController();
   bool _acceptedTerms = false;
@@ -32,7 +31,6 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
-    _phone.dispose();
     _company.dispose();
     _role.dispose();
     super.dispose();
@@ -65,7 +63,6 @@ class _SignupScreenState extends State<SignupScreen> {
       await context.read<AppState>().signUpLocal(
             name: _name.text,
             email: _email.text,
-            phone: _phone.text,
             company: _company.text,
             role: _role.text,
           );
@@ -197,19 +194,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           const SizedBox(height: 14),
                           _Field(
-                            controller: _phone,
-                            label: l.signupPhoneLabel,
-                            icon: LucideIcons.phone,
-                            keyboardType: TextInputType.phone,
-                            validator: (v) => _required(v, l),
-                            textInputAction: TextInputAction.next,
-                          ),
-                          const SizedBox(height: 14),
-                          _Field(
                             controller: _company,
                             label: l.signupCompanyLabel,
                             icon: LucideIcons.building2,
-                            validator: (v) => _required(v, l),
                             textInputAction: TextInputAction.next,
                           ),
                           const SizedBox(height: 14),
@@ -217,7 +204,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             controller: _role,
                             label: l.signupRoleLabel,
                             icon: LucideIcons.briefcase,
-                            validator: (v) => _required(v, l),
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _submit(),
                           ),

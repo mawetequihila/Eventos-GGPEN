@@ -18,7 +18,6 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _phone;
   late final TextEditingController _company;
   late final TextEditingController _role;
   bool _submitted = false;
@@ -28,14 +27,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   void initState() {
     super.initState();
     final state = context.read<AppState>();
-    _phone = TextEditingController(text: state.profilePhone ?? '');
     _company = TextEditingController(text: state.profileCompany ?? '');
     _role = TextEditingController(text: state.profileRole ?? '');
   }
 
   @override
   void dispose() {
-    _phone.dispose();
     _company.dispose();
     _role.dispose();
     super.dispose();
@@ -48,7 +45,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await context.read<AppState>().saveProfileExtra(
-            telefone: _phone.text,
             empresa: _company.text,
             cargo: _role.text,
           );
@@ -132,22 +128,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ),
               const SizedBox(height: 20),
               _Field(
-                controller: _phone,
-                label: l.profileFieldPhone,
-                icon: LucideIcons.phone,
-                keyboardType: TextInputType.phone,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l.signupValidationRequired
-                    : null,
-              ),
-              const SizedBox(height: 14),
-              _Field(
                 controller: _company,
                 label: l.profileFieldCompany,
                 icon: LucideIcons.building2,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l.signupValidationRequired
-                    : null,
               ),
               const SizedBox(height: 14),
               _Field(
@@ -156,9 +139,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 icon: LucideIcons.briefcase,
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l.signupValidationRequired
-                    : null,
               ),
               const SizedBox(height: 22),
               FilledButton(
@@ -195,8 +175,6 @@ class _Field extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
-  final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
 
@@ -204,8 +182,6 @@ class _Field extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.icon,
-    this.keyboardType,
-    this.validator,
     this.textInputAction = TextInputAction.next,
     this.onSubmitted,
   });
@@ -214,10 +190,8 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      keyboardType: keyboardType,
       textInputAction: textInputAction,
       onFieldSubmitted: onSubmitted,
-      validator: validator,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         labelText: label,

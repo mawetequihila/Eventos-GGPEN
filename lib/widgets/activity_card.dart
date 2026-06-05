@@ -112,15 +112,16 @@ class _ActivityCardState extends State<ActivityCard>
                 active: isFav,
                 activeColor: AppColors.techBlue,
                 onTap: () =>
-                    context.read<AppState>().toggleFavorite(activity.id),
+                    context.read<AppState>().toggleFavorite(activity),
               ),
               if (widget.showReminderToggle && isFav)
                 _IconAction(
                   icon: isReminder ? LucideIcons.bellRing : LucideIcons.bell,
                   active: isReminder,
                   activeColor: scheme.secondary,
-                  onTap: () =>
-                      context.read<AppState>().toggleReminder(activity.id),
+                  onTap: () => context
+                      .read<AppState>()
+                      .toggleReminder(activity, AppLocalizations.of(context)),
                 ),
             ],
           ),

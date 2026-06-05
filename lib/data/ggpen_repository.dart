@@ -85,9 +85,13 @@ class GgpenRepository {
   /// Contagem de sessoes por orador (id do orador -> n.o de atividades).
   /// Usado para o "X sessoes" na pagina Oradores.
   Future<Map<String, int>> getSpeakerSessionCounts() async {
-    final rows = await _db.from('activity_speakers').select('speaker_id');
+    final rows = await _db
+        .from('activity_speakers')
+        .select('speaker_id, activities(na_app)');
     final counts = <String, int>{};
     for (final r in rows) {
+      final a = r['activities'];
+      if (a is Map && a['na_app'] == false) continue; // só conta as públicas
       final id = r['speaker_id'] as String;
       counts[id] = (counts[id] ?? 0) + 1;
     }
@@ -111,8 +115,20 @@ class GgpenRepository {
         .from('activities')
         .select()
         .eq('event_id', eventId)
+        .eq('na_app', true) // só as públicas; esconde as agendas internas GGPEN
         .order('inicio');
     return rows.map(Activity.fromMap).toList();
+  }
+
+  /// Atividades de um evento EM TEMPO REAL. Emite sempre que algo muda na
+  /// tabela (ex.: o organizador altera o horário de uma sessão no painel),
+  /// permitindo à app reagir de imediato — reagendar lembretes e avisar.
+  Stream<List<Activity>> watchActivities(String eventId) {
+    return _db
+        .from('activities')
+        .stream(primaryKey: ['id'])
+        .eq('event_id', eventId)
+        .map((rows) => rows.map(Activity.fromMap).toList());
   }
 
   Future<Activity> getActivity(String activityId) async {
@@ -129,7 +145,10 @@ class GgpenRepository {
     final list = <Activity>[];
     for (final r in rows) {
       final a = r['activities'];
-      if (a is Map<String, dynamic>) list.add(Activity.fromMap(a));
+      // Só mostra na ficha do orador as atividades públicas (na_app).
+      if (a is Map<String, dynamic> && a['na_app'] != false) {
+        list.add(Activity.fromMap(a));
+      }
     }
     list.sort((x, y) => x.inicio.compareTo(y.inicio));
     return list;

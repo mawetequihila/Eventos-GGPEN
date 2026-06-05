@@ -3,7 +3,7 @@
 
   "navHome": "Accueil",
   "navAgenda": "Programme",
-  "navSpeakers": "Intervenants",
+  "navSpeakers": "Invités",
   "navGgpen": "GGPEN",
   "drawerMyAgenda": "Mon programme",
   "drawerNotifications": "Notifications",
@@ -45,6 +45,9 @@
 
   "linkCopied": "Lien copié (démo)",
   "tabSpeakers": "Intervenants",
+  "roleModerators": "Modérateurs",
+  "roleSpeakers": "Orateurs",
+  "roleGuests": "Invités",
   "tabQa": "Questions",
   "remindBeforeStart": "Me rappeler avant le début",
   "inMyAgenda": "Dans mon programme",
@@ -87,7 +90,7 @@
   "pointCatering": "Restauration",
   "pointParking": "Parking",
 
-  "speakersTitle": "Intervenants",
+  "speakersTitle": "Invités",
   "speakersConfirmed": "{count} confirmés",
   "sessionsCount": "{count, plural, =1{1 session} other{{count} sessions}}",
 
@@ -181,6 +184,9 @@
   "notifWelcomeBody": "Explorez le programme et enregistrez les sessions à ne pas manquer.",
   "notifStartingSoonTitle": "{title} commence bientôt",
   "notifStartingSoonBody": "Commence à {time} · {location}",
+  "notifTimeChangedTitle": "Horaire modifié : {title}",
+  "notifTimeChangedBody": "Désormais à {time} · {location}",
+  "notifSessionUpdatedTitle": "Session mise à jour : {title}",
   "noPhotos": "Pas encore de photos.",
 
   "reminderLeadTitle": "Délai du rappel",
@@ -202,9 +208,9 @@
   "authWelcomeTitle": "Bienvenue à GGPEN",
   "authWelcomeSubtitle": "Suivez notre participation à Angotic 2026.",
   "authContinueWithGoogle": "Continuer avec Google",
-  "authCreateAccount": "Créer un compte avec email",
+  "authCreateAccount": "Inscription",
   "authOr": "ou",
-  "signupTitle": "Créer votre compte",
+  "signupTitle": "Inscription",
   "signupHelper": "Remplissez vos informations pour recevoir rappels et nouveautés.",
   "signupNameLabel": "Nom complet",
   "signupEmailLabel": "Email",

@@ -15,7 +15,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get navAgenda => 'Agenda';
 
   @override
-  String get navSpeakers => 'Oradores';
+  String get navSpeakers => 'Convidados';
 
   @override
   String get navGgpen => 'GGPEN';
@@ -133,7 +133,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get linkCopied => 'Link copiado (demo)';
 
   @override
-  String get tabSpeakers => 'Oradores';
+  String get tabSpeakers => 'Intervenientes';
+
+  @override
+  String get roleModerators => 'Moderadores';
+
+  @override
+  String get roleSpeakers => 'Oradores';
+
+  @override
+  String get roleGuests => 'Convidados';
 
   @override
   String get tabQa => 'Dúvidas';
@@ -256,7 +265,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get pointParking => 'Estacionamento';
 
   @override
-  String get speakersTitle => 'Oradores';
+  String get speakersTitle => 'Convidados';
 
   @override
   String speakersConfirmed(int count) {
@@ -529,6 +538,21 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String notifTimeChangedTitle(String title) {
+    return 'Horário alterado: $title';
+  }
+
+  @override
+  String notifTimeChangedBody(String time, String location) {
+    return 'Agora às $time · $location';
+  }
+
+  @override
+  String notifSessionUpdatedTitle(String title) {
+    return 'Sessão atualizada: $title';
+  }
+
+  @override
   String get noPhotos => 'Ainda não há fotos.';
 
   @override
@@ -590,13 +614,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get authContinueWithGoogle => 'Continuar com Google';
 
   @override
-  String get authCreateAccount => 'Criar conta com email';
+  String get authCreateAccount => 'Cadastro';
 
   @override
   String get authOr => 'ou';
 
   @override
-  String get signupTitle => 'Criar a tua conta';
+  String get signupTitle => 'Cadastro';
 
   @override
   String get signupHelper =>
