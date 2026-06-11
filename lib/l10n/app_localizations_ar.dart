@@ -414,6 +414,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get typePainel => 'حلقة نقاش';
 
   @override
+  String get formatPlenaria => 'جلسة عامة';
+
+  @override
+  String get formatParalela => 'جلسة موازية';
+
+  @override
   String get typeFormacao => 'تدريب';
 
   @override
@@ -672,6 +678,62 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signupMustAcceptTerms => 'يجب الموافقة على الشروط للمتابعة.';
 
   @override
+  String get passwordLabel => 'كلمة المرور';
+
+  @override
+  String get passwordConfirmLabel => 'تأكيد كلمة المرور';
+
+  @override
+  String get passwordMin => '6 أحرف على الأقل';
+
+  @override
+  String get passwordMismatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get loginTitle => 'تسجيل الدخول';
+
+  @override
+  String get loginSubtitle => 'مرحبًا بعودتك. أدخل بياناتك.';
+
+  @override
+  String get loginSubmit => 'تسجيل الدخول';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get loginNoAccount => 'ليس لديك حساب؟';
+
+  @override
+  String get loginCreateLink => 'إنشاء حساب';
+
+  @override
+  String get signupCheckEmail =>
+      'تم إنشاء الحساب! تحقق من بريدك الإلكتروني للتأكيد ثم سجّل الدخول.';
+
+  @override
+  String get verifyEmailTitle => 'أكّد بريدك الإلكتروني';
+
+  @override
+  String verifyEmailBody(String email) {
+    return 'أرسلنا رابط تأكيد إلى $email. افتح بريدك وأكّد حسابك لتتمكن من تسجيل الدخول.';
+  }
+
+  @override
+  String get verifyEmailResend => 'إعادة إرسال البريد';
+
+  @override
+  String get verifyEmailResent => 'تمت إعادة إرسال بريد التأكيد.';
+
+  @override
+  String get passwordResetSent =>
+      'أرسلنا إليك بريدًا لإعادة تعيين كلمة المرور.';
+
+  @override
+  String get authGenericError =>
+      'تعذّر الإكمال. تحقق من بياناتك وحاول مرة أخرى.';
+
+  @override
   String get termsDialogTitle => 'شروط الاستخدام';
 
   @override
@@ -703,6 +765,9 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get completeProfileSubtitle =>
       'بضع بيانات إضافية — الهاتف والشركة والمنصب.';
+
+  @override
+  String get completeProfileReminderBody => 'أضف شركتك ومنصبك في ملفك الشخصي.';
 
   @override
   String get profileSaveLater => 'إكمال لاحقًا';

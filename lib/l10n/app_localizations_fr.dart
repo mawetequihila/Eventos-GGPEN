@@ -418,6 +418,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get typePainel => 'Panel';
 
   @override
+  String get formatPlenaria => 'Plénière';
+
+  @override
+  String get formatParalela => 'Parallèle';
+
+  @override
   String get typeFormacao => 'Formation';
 
   @override
@@ -680,6 +686,62 @@ class AppLocalizationsFr extends AppLocalizations {
       'Vous devez accepter les conditions pour continuer.';
 
   @override
+  String get passwordLabel => 'Mot de passe';
+
+  @override
+  String get passwordConfirmLabel => 'Confirmer le mot de passe';
+
+  @override
+  String get passwordMin => '6 caractères minimum';
+
+  @override
+  String get passwordMismatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get loginTitle => 'Connexion';
+
+  @override
+  String get loginSubtitle => 'Bon retour. Saisissez vos identifiants.';
+
+  @override
+  String get loginSubmit => 'Se connecter';
+
+  @override
+  String get forgotPassword => 'Mot de passe oublié ?';
+
+  @override
+  String get loginNoAccount => 'Pas encore de compte ?';
+
+  @override
+  String get loginCreateLink => 'S\'inscrire';
+
+  @override
+  String get signupCheckEmail =>
+      'Compte créé ! Vérifiez votre e-mail pour confirmer, puis connectez-vous.';
+
+  @override
+  String get verifyEmailTitle => 'Confirmez votre e-mail';
+
+  @override
+  String verifyEmailBody(String email) {
+    return 'Nous avons envoyé un lien de confirmation à $email. Ouvrez votre boîte mail et confirmez votre compte pour vous connecter.';
+  }
+
+  @override
+  String get verifyEmailResend => 'Renvoyer l\'e-mail';
+
+  @override
+  String get verifyEmailResent => 'E-mail de confirmation renvoyé.';
+
+  @override
+  String get passwordResetSent =>
+      'Nous vous avons envoyé un e-mail pour réinitialiser le mot de passe.';
+
+  @override
+  String get authGenericError =>
+      'Impossible de continuer. Vérifiez vos informations et réessayez.';
+
+  @override
   String get termsDialogTitle => 'Conditions d\'utilisation';
 
   @override
@@ -711,6 +773,10 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get completeProfileSubtitle =>
       'Quelques infos de plus — téléphone, entreprise et fonction.';
+
+  @override
+  String get completeProfileReminderBody =>
+      'Ajoutez votre entreprise et votre fonction dans votre profil.';
 
   @override
   String get profileSaveLater => 'Terminer plus tard';

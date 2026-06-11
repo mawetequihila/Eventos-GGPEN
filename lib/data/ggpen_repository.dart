@@ -28,32 +28,63 @@ class GgpenRepository {
 
   Future<void> signOut() => _db.auth.signOut();
 
-  // ================== PERFIL ==================
-  /// Perfil do utilizador autenticado (linha em `profiles`). null se não existir.
-  Future<Map<String, dynamic>?> getMyProfile() async {
-    final user = currentUser;
-    if (user == null) return null;
-    return _db.from('profiles').select().eq('id', user.id).maybeSingle();
+  /// Cria uma conta REAL (email + palavra-passe) no Supabase. O nome vai nos
+  /// metadados para o trigger preencher `profiles`. Se a confirmação de email
+  /// estiver ligada, `response.session` vem null (precisa confirmar primeiro).
+  Future<AuthResponse> signUpWithEmail({
+    required String email,
+    required String password,
+    String? nome,
+  }) {
+    return _db.auth.signUp(
+      email: email.trim(),
+      password: password,
+      data: (nome != null && nome.trim().isNotEmpty) ? {'nome': nome.trim()} : null,
+    );
   }
 
-  /// Grava/atualiza os campos extra do perfil (telefone, empresa, cargo).
-  /// Usa upsert para funcionar mesmo que a linha ainda não exista.
-  Future<void> updateMyProfile({
-    String? nome,
-    String? telefone,
-    String? empresa,
-    String? cargo,
-  }) async {
+  /// Inicia sessão com email + palavra-passe. Lança `AuthException` se as
+  /// credenciais estiverem erradas ou o email ainda não estiver confirmado.
+  Future<AuthResponse> signInWithEmail({
+    required String email,
+    required String password,
+  }) {
+    return _db.auth.signInWithPassword(email: email.trim(), password: password);
+  }
+
+  /// Envia email de reposição de palavra-passe.
+  Future<void> sendPasswordReset(String email) =>
+      _db.auth.resetPasswordForEmail(email.trim());
+
+  /// Reenvia o email de confirmação de conta.
+  Future<void> resendConfirmation(String email) =>
+      _db.auth.resend(type: OtpType.signup, email: email.trim());
+
+  // ================== PREFERÊNCIAS DO UTILIZADOR ==================
+  /// Lê as preferências guardadas na conta (favoritos, lembretes, idioma, etc.).
+  /// Devolve null se o utilizador não tiver sessão ou ainda não tiver preferências.
+  Future<Map<String, dynamic>?> getMyPrefs() async {
     final user = currentUser;
-    if (user == null) throw Exception('Sem sessao.');
-    final data = <String, dynamic>{
-      'id': user.id,
-      if (nome != null) 'nome': nome,
-      if (telefone != null) 'telefone': telefone,
-      if (empresa != null) 'empresa': empresa,
-      if (cargo != null) 'cargo': cargo,
-    };
-    await _db.from('profiles').upsert(data);
+    if (user == null) return null;
+    final row = await _db
+        .from('user_prefs')
+        .select('data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    final data = row?['data'];
+    return data is Map<String, dynamic> ? data : null;
+  }
+
+  /// Grava (upsert) as preferências do utilizador na conta. Assim ficam
+  /// disponíveis noutros dispositivos/browsers ao iniciar sessão.
+  Future<void> saveMyPrefs(Map<String, dynamic> data) async {
+    final user = currentUser;
+    if (user == null) return;
+    await _db.from('user_prefs').upsert({
+      'user_id': user.id,
+      'data': data,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    }, onConflict: 'user_id');
   }
 
   // ================== LEITURA PUBLICA ==================

@@ -15,10 +15,11 @@ import '../services/reminder_scheduler.dart';
 /// Estado da sessão para decidir o ecrã raiz.
 /// - loggedOut: sem sessão e sem perfil local guardado
 /// - welcomeBack: há perfil local guardado mas sessão inactiva → "Bem-vindo de volta"
-/// - checking: sessão Google iniciada, a verificar o perfil
-/// - needsProfile: Google sem telefone/empresa/cargo → completar perfil
 /// - ready: pronto para a app
-enum AuthStatus { loggedOut, welcomeBack, checking, needsProfile, ready }
+enum AuthStatus { loggedOut, welcomeBack, ready }
+
+/// Resultado do registo por email.
+enum SignUpResult { signedIn, needsEmailConfirmation }
 
 /// Estado global: favoritos e lembretes (locais), idioma (local) e sessão
 /// (autenticação Google via Supabase). Favoritos NUNCA vão para o backend.
@@ -31,7 +32,6 @@ class AppState extends ChangeNotifier {
   static const _kLeadMinutes = 'reminderLeadMinutes';
   static const _kLocalProfile = 'localProfile';
   static const _kLocalProfileActive = 'localProfileActive';
-  static const _kProfileComplete = 'profileComplete';
 
   /// Opções de antecedência do lembrete (minutos antes de começar).
   static const List<int> leadOptions = [0, 5, 10, 15, 30];
@@ -47,12 +47,9 @@ class AppState extends ChangeNotifier {
   final GgpenRepository _repo;
   AppState(this._repo) {
     _authSub = _repo.authChanges.listen((_) {
-      // Sessão mudou: voltar a verificar o perfil do Supabase.
-      _profileChecked = false;
-      _profile = null;
-      _profileDismissed = false;
       notifyListeners();
-      if (_repo.isLoggedIn) _checkProfile();
+      // Ao iniciar sessão, traz favoritos/lembretes/idioma da conta.
+      if (_repo.isLoggedIn) _loadCloudPrefs();
     });
   }
 
@@ -71,12 +68,6 @@ class AppState extends ChangeNotifier {
   bool _localProfileActive = false;
   bool _signingOut = false;
 
-  // Perfil Supabase (Google): linha de `profiles` + estado da verificação.
-  Map<String, dynamic>? _profile;
-  bool _profileChecked = false;
-  bool _profileDismissed = false;
-  // Cache local: perfil já completo → entra direto, sem esperar pela rede.
-  bool _profileCompleteCached = false;
 
   SharedPreferences? _prefs;
   StreamSubscription<AuthState>? _authSub;
@@ -101,7 +92,8 @@ class AppState extends ChangeNotifier {
     final user = _repo.currentUser;
     if (user != null) {
       final meta = user.userMetadata;
-      final fullName = meta?['full_name'] ?? meta?['name'];
+      // 'nome' = cadastro por email; 'full_name'/'name' = Google.
+      final fullName = meta?['nome'] ?? meta?['full_name'] ?? meta?['name'];
       if (fullName is String && fullName.trim().isNotEmpty) {
         return fullName.trim();
       }
@@ -128,30 +120,12 @@ class AppState extends ChangeNotifier {
       if (_localProfile != null) return AuthStatus.welcomeBack;
       return AuthStatus.loggedOut;
     }
-    if (_repo.isLoggedIn) {
-      // Caminho rápido: já sabemos que o perfil está completo → entra direto.
-      if (_profileDismissed || _profileCompleteCached) return AuthStatus.ready;
-      if (!_profileChecked) return AuthStatus.checking;
-      return _profileNeedsCompletion
-          ? AuthStatus.needsProfile
-          : AuthStatus.ready;
-    }
+    // Com sessão, entra sempre direto na app.
+    if (_repo.isLoggedIn) return AuthStatus.ready;
     if (_localProfileActive) return AuthStatus.ready;
     if (_localProfile != null) return AuthStatus.welcomeBack;
     return AuthStatus.loggedOut;
   }
-
-  bool get _profileNeedsCompletion {
-    final p = _profile;
-    bool empty(dynamic v) => v == null || (v is String && v.trim().isEmpty);
-    if (p == null) return true;
-    return empty(p['telefone']) || empty(p['empresa']) || empty(p['cargo']);
-  }
-
-  // Campos do perfil (para pré-preencher o formulário).
-  String? get profilePhone => _profile?['telefone'] as String?;
-  String? get profileCompany => _profile?['empresa'] as String?;
-  String? get profileRole => _profile?['cargo'] as String?;
 
   /// Idioma escolhido. `null` = seguir o idioma do sistema.
   Locale? get locale => _locale;
@@ -195,7 +169,6 @@ class AppState extends ChangeNotifier {
       _locale = Locale(code);
     }
     _reminderLeadMinutes = prefs.getInt(_kLeadMinutes) ?? 15;
-    _profileCompleteCached = prefs.getBool(_kProfileComplete) ?? false;
     _localProfileActive = prefs.getBool(_kLocalProfileActive) ?? false;
     final profileStr = prefs.getString(_kLocalProfile);
     if (profileStr != null && profileStr.isNotEmpty) {
@@ -211,14 +184,61 @@ class AppState extends ChangeNotifier {
       }
     }
     notifyListeners();
-    // Se já há sessão Google ativa (app reaberta), verifica o perfil.
-    if (_repo.isLoggedIn) _checkProfile();
+    // Se já há sessão ativa (app reaberta), sincroniza as preferências da conta.
+    if (_repo.isLoggedIn) _loadCloudPrefs();
+  }
+
+  // ---- Sincronização de preferências com a conta (web/multi-dispositivo) ----
+  /// Ao iniciar sessão, traz da conta os favoritos/lembretes/idioma. Se a conta
+  /// ainda não tiver nada (1.ª vez), envia o que está no dispositivo (migração).
+  Future<void> _loadCloudPrefs() async {
+    if (!_repo.isLoggedIn) return;
+    try {
+      final remote = await _repo.getMyPrefs();
+      if (remote == null) {
+        await _pushCloudPrefs(); // 1.ª vez: migra o local para a conta
+        return;
+      }
+      List<String> asList(dynamic v) =>
+          v is List ? v.map((e) => '$e').toList() : const <String>[];
+      _favorites
+        ..clear()
+        ..addAll(asList(remote['favorites']));
+      _reminders
+        ..clear()
+        ..addAll(asList(remote['reminders']));
+      final lead = remote['leadMinutes'];
+      if (lead is int) _reminderLeadMinutes = lead;
+      final loc = remote['locale'];
+      if (loc is String && loc.isNotEmpty) _locale = Locale(loc);
+      // Persiste localmente o que veio da conta.
+      _persistLists();
+      _prefs?.setInt(_kLeadMinutes, _reminderLeadMinutes);
+      if (_locale != null) _prefs?.setString(_kLocale, _locale!.languageCode);
+      notifyListeners();
+    } catch (_) {
+      // Sem rede / tabela ainda não criada — fica com o estado local.
+    }
+  }
+
+  /// Envia o estado atual para a conta (se houver sessão). Chamado após mudanças.
+  Future<void> _pushCloudPrefs() async {
+    if (!_repo.isLoggedIn) return;
+    try {
+      await _repo.saveMyPrefs({
+        'favorites': _favorites.toList(),
+        'reminders': _reminders.toList(),
+        'leadMinutes': _reminderLeadMinutes,
+        'locale': _locale?.languageCode,
+      });
+    } catch (_) {}
   }
 
   /// Define a antecedência do lembrete (minutos antes de começar) e persiste.
   void setReminderLeadMinutes(int minutes) {
     _reminderLeadMinutes = minutes;
     _prefs?.setInt(_kLeadMinutes, minutes);
+    _pushCloudPrefs();
     notifyListeners();
   }
 
@@ -230,6 +250,7 @@ class AppState extends ChangeNotifier {
     } else {
       _prefs?.setString(_kLocale, locale.languageCode);
     }
+    _pushCloudPrefs();
     notifyListeners();
   }
 
@@ -254,6 +275,7 @@ class AppState extends ChangeNotifier {
       _watchedSig[id] = _sigOf(activity); // baseline para detectar mudanças
     }
     _persistLists();
+    _pushCloudPrefs();
     notifyListeners();
   }
 
@@ -271,6 +293,7 @@ class AppState extends ChangeNotifier {
       scheduleReminderFor(l, activity, _reminderLeadMinutes);
     }
     _persistLists();
+    _pushCloudPrefs();
     notifyListeners();
   }
 
@@ -440,21 +463,57 @@ class AppState extends ChangeNotifier {
   /// Sessão Google (Supabase).
   Future<void> signInWithGoogle() => _repo.signInWithGoogle();
 
+  /// Regista uma conta real (email + palavra-passe) no Supabase. O nome vai nos
+  /// metadados (o trigger preenche `profiles`). Devolve
+  /// [SignUpResult.needsEmailConfirmation] se o Supabase exigir confirmação de
+  /// email (sem sessão imediata).
+  Future<SignUpResult> registerWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    final AuthResponse res;
+    try {
+      res = await _repo.signUpWithEmail(
+          email: email, password: password, nome: name);
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
+    return res.session == null
+        ? SignUpResult.needsEmailConfirmation
+        : SignUpResult.signedIn;
+  }
+
+  /// Inicia sessão com email + palavra-passe. O resto (ir para a app, trazer as
+  /// preferências da conta) é tratado pelo listener de [authChanges].
+  Future<void> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await _repo.signInWithEmail(email: email, password: password);
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
+  }
+
+  /// Pede a reposição de palavra-passe por email.
+  Future<void> sendPasswordReset(String email) =>
+      _repo.sendPasswordReset(email);
+
+  /// Reenvia o email de confirmação de conta.
+  Future<void> resendConfirmation(String email) =>
+      _repo.resendConfirmation(email);
+
   /// Cria/actualiza um perfil local (apenas em SharedPreferences — sem backend).
   /// Usado pelo formulário manual de inscrição.
   Future<void> signUpLocal({
     required String name,
     required String email,
-    String? phone,
-    required String company,
-    required String role,
   }) async {
     _localProfile = {
       'name': name.trim(),
       'email': email.trim(),
-      'phone': (phone ?? '').trim(),
-      'company': company.trim(),
-      'role': role.trim(),
     };
     _localProfileActive = true;
     await _prefs?.setString(_kLocalProfile, jsonEncode(_localProfile));
@@ -480,49 +539,6 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Lê o perfil do Supabase (após login Google) para saber se faltam dados.
-  Future<void> _checkProfile() async {
-    try {
-      // Timeout para nunca pendurar o arranque em rede lenta.
-      _profile =
-          await _repo.getMyProfile().timeout(const Duration(seconds: 6));
-    } catch (_) {
-      _profile = null;
-    } finally {
-      _profileChecked = true;
-      // Se já está completo, memoriza para os próximos arranques serem instantâneos.
-      if (_profile != null && !_profileNeedsCompletion) {
-        _profileCompleteCached = true;
-        _prefs?.setBool(_kProfileComplete, true);
-      }
-      notifyListeners();
-    }
-  }
-
-  /// Grava os campos extra (telefone, empresa, cargo) na tabela `profiles`.
-  Future<void> saveProfileExtra({
-    String? telefone,
-    required String empresa,
-    required String cargo,
-  }) async {
-    await _repo.updateMyProfile(
-      telefone: telefone?.trim(),
-      empresa: empresa.trim(),
-      cargo: cargo.trim(),
-    );
-    await _checkProfile();
-    // Campos são opcionais: depois de submeter (mesmo vazios) não voltar a pedir.
-    _profileCompleteCached = true;
-    await _prefs?.setBool(_kProfileComplete, true);
-    notifyListeners();
-  }
-
-  /// Permite avançar sem completar agora (volta a perguntar no próximo arranque).
-  void dismissProfilePrompt() {
-    _profileDismissed = true;
-    notifyListeners();
-  }
-
   /// Termina sessão (Google e/ou perfil local). O perfil local **NÃO** é
   /// apagado — fica disponível para "Bem-vindo de volta". Para apagar mesmo,
   /// usar [forgetLocalProfile].
@@ -533,14 +549,9 @@ class AppState extends ChangeNotifier {
     final wasGoogle = _repo.isLoggedIn;
     _signingOut = true;
     _localProfileActive = false;
-    _profile = null;
-    _profileChecked = false;
-    _profileDismissed = false;
-    _profileCompleteCached = false;
     notifyListeners(); // AuthGate redireciona imediatamente
     // Persistência local rápida (SharedPreferences).
     await _prefs?.remove(_kLocalProfileActive);
-    await _prefs?.remove(_kProfileComplete);
     // Sessão Google em background com timeout — se falhar, ignora (já saímos
     // localmente).
     if (wasGoogle) {

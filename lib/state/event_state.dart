@@ -41,6 +41,37 @@ class EventState extends ChangeNotifier {
 
   bool get isReady => status == LoadStatus.ready;
 
+  // Dados crus (mantidos para re-mapear quando a língua muda, sem refetch).
+  List<sb.Activity> _rawActs = [];
+  List<sb.Speaker> _rawSpeakers = [];
+  Map<String, int> _counts = {};
+  List<DateTime> _dayKeys = [];
+  /// Idioma do CONTEÚDO (título/descrição/bio). Definido a partir do idioma
+  /// escolhido na app. `null`/`pt` → mostra o texto base (português).
+  String? _lang;
+
+  /// Define o idioma do conteúdo e re-mapeia os modelos (sem ir ao backend).
+  /// Chamado quando o utilizador troca de idioma na app.
+  void setLanguage(String? code) {
+    final norm = (code == null || code.isEmpty) ? 'pt' : code;
+    if (norm == _lang) return;
+    _lang = norm;
+    if (_rawActs.isNotEmpty || _rawSpeakers.isNotEmpty) {
+      _rebuild();
+      notifyListeners();
+    }
+  }
+
+  /// Reconstrói `activities`/`speakers` a partir dos dados crus, no idioma atual.
+  void _rebuild() {
+    activities = _rawActs.map((a) => _toAppActivity(a, _dayKeys)).toList()
+      ..sort((a, b) => a.start.compareTo(b.start));
+    speakers = [
+      for (var i = 0; i < _rawSpeakers.length; i++)
+        _toAppSpeaker(_rawSpeakers[i], _counts[_rawSpeakers[i].id] ?? 0, i),
+    ];
+  }
+
   // Subscrição em tempo real às atividades (deteta mudanças de horário feitas
   // no painel enquanto a app está aberta).
   StreamSubscription<List<sb.Activity>>? _activitiesSub;
@@ -86,12 +117,12 @@ class EventState extends ChangeNotifier {
 
       event = ev;
       days = dayKeys;
-      activities = acts.map((a) => _toAppActivity(a, dayKeys)).toList()
-        ..sort((a, b) => a.start.compareTo(b.start));
-      speakers = [
-        for (var i = 0; i < allSpeakers.length; i++)
-          _toAppSpeaker(allSpeakers[i], counts[allSpeakers[i].id] ?? 0, i),
-      ];
+      // Guarda os dados crus para re-mapear ao trocar de idioma sem refetch.
+      _rawActs = acts;
+      _rawSpeakers = allSpeakers;
+      _counts = counts;
+      _dayKeys = dayKeys;
+      _rebuild();
       status = LoadStatus.ready;
     } catch (e) {
       error = e.toString();
@@ -123,21 +154,21 @@ class EventState extends ChangeNotifier {
     final idx = dayKeys.indexOf(d);
     return Activity(
       id: a.id,
-      title: a.titulo,
+      title: a.tituloFor(_lang),
       type: _mapTipo(a.tipo),
       day: idx < 0 ? 1 : idx + 1,
       start: a.inicio,
       end: a.fim ?? a.inicio,
       location: a.local ?? '',
-      description: a.descricao ?? '',
+      description: a.descricaoFor(_lang) ?? '',
     );
   }
 
   Speaker _toAppSpeaker(sb.Speaker s, int sessions, int index) => Speaker(
         id: s.id,
         name: s.nome,
-        role: s.organizacao ?? '',
-        bio: s.bio,
+        role: s.organizacaoFor(_lang) ?? '',
+        bio: s.bioFor(_lang),
         avatarUrl: s.avatarUrl,
         country: s.pais,
         region: s.origem,
@@ -153,8 +184,14 @@ class EventState extends ChangeNotifier {
         return ActivityType.lancamento;
       case 'assinatura':
         return ActivityType.assinatura;
+      case 'plenaria':
+        return ActivityType.plenaria;
+      case 'paralela':
+        return ActivityType.paralela;
       case 'painel':
         return ActivityType.painel;
+      case 'formacao':
+        return ActivityType.formacao;
       case 'workshop':
         return ActivityType.workshop;
       default:

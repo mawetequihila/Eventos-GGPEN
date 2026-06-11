@@ -72,10 +72,12 @@ class _ActivityCardState extends State<ActivityCard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  spacing: AppTheme.labelGap,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     TypeLabel(activity.type),
-                    const SizedBox(width: AppTheme.labelGap),
                     if (status == ActivityStatus.live) const LiveBadge(),
                     if (status == ActivityStatus.cancelled)
                       Text(

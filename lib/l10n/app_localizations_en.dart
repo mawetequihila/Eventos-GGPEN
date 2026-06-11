@@ -415,6 +415,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get typePainel => 'Panel';
 
   @override
+  String get formatPlenaria => 'Plenary';
+
+  @override
+  String get formatParalela => 'Parallel';
+
+  @override
   String get typeFormacao => 'Training';
 
   @override
@@ -674,6 +680,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signupMustAcceptTerms => 'You must accept the terms to continue.';
 
   @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get passwordConfirmLabel => 'Confirm password';
+
+  @override
+  String get passwordMin => 'At least 6 characters';
+
+  @override
+  String get passwordMismatch => 'Passwords don\'t match';
+
+  @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String get loginSubtitle => 'Welcome back. Enter your details.';
+
+  @override
+  String get loginSubmit => 'Sign in';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get loginNoAccount => 'Don\'t have an account?';
+
+  @override
+  String get loginCreateLink => 'Sign up';
+
+  @override
+  String get signupCheckEmail =>
+      'Account created! Check your email to confirm and then sign in.';
+
+  @override
+  String get verifyEmailTitle => 'Confirm your email';
+
+  @override
+  String verifyEmailBody(String email) {
+    return 'We sent a confirmation link to $email. Open your inbox and confirm your account to sign in.';
+  }
+
+  @override
+  String get verifyEmailResend => 'Resend email';
+
+  @override
+  String get verifyEmailResent => 'Confirmation email sent again.';
+
+  @override
+  String get passwordResetSent =>
+      'We\'ve sent you an email to reset your password.';
+
+  @override
+  String get authGenericError =>
+      'Could not complete. Check your details and try again.';
+
+  @override
   String get termsDialogTitle => 'Terms of Use';
 
   @override
@@ -705,6 +767,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get completeProfileSubtitle =>
       'Just a few more details — phone, company and role.';
+
+  @override
+  String get completeProfileReminderBody =>
+      'Add your company and role in your profile.';
 
   @override
   String get profileSaveLater => 'Finish later';

@@ -7,6 +7,7 @@ import '../../state/app_state.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/legal.dart';
+import 'login_email_screen.dart';
 
 /// Inscrição manual: nome, email, telefone, empresa, cargo + termos.
 /// Persistido apenas localmente (SharedPreferences) via [AppState.signUpLocal].
@@ -21,8 +22,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController();
-  final _company = TextEditingController();
-  final _role = TextEditingController();
+  final _password = TextEditingController();
+  final _password2 = TextEditingController();
   bool _acceptedTerms = false;
   bool _submitted = false;
   bool _busy = false;
@@ -31,8 +32,8 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _name.dispose();
     _email.dispose();
-    _company.dispose();
-    _role.dispose();
+    _password.dispose();
+    _password2.dispose();
     super.dispose();
   }
 
@@ -47,32 +48,47 @@ class _SignupScreenState extends State<SignupScreen> {
     return null;
   }
 
+  String? _passwordValidator(String? v, AppLocalizations l) {
+    if (v == null || v.isEmpty) return l.signupValidationRequired;
+    if (v.length < 6) return l.passwordMin;
+    return null;
+  }
+
   Future<void> _submit() async {
     final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
     setState(() => _submitted = true);
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
     if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l.signupMustAcceptTerms)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l.signupMustAcceptTerms)));
       return;
     }
     setState(() => _busy = true);
     try {
-      await context.read<AppState>().signUpLocal(
+      await context.read<AppState>().registerWithEmail(
             name: _name.text,
             email: _email.text,
-            company: _company.text,
-            role: _role.text,
+            password: _password.text,
           );
-      // Desempilha SignupScreen (e qualquer outra rota empurrada) para
-      // expor o AuthGate, que já está pronto a mostrar a HomeShell.
       if (!mounted) return;
-      Navigator.of(context).popUntil((r) => r.isFirst);
+      // Confirmação de email desligada no Supabase → o registo cria sessão e o
+      // AuthGate entra direto na app.
+      navigator.popUntil((r) => r.isFirst);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(_authMessage(e, l))));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _authMessage(Object e, AppLocalizations l) {
+    final s = e.toString();
+    // Mensagem do Supabase costuma ser legível; senão, genérica.
+    return s.contains('AuthException') || s.length > 120
+        ? l.authGenericError
+        : s.replaceFirst('Exception: ', '');
   }
 
   @override
@@ -194,16 +210,21 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           const SizedBox(height: 14),
                           _Field(
-                            controller: _company,
-                            label: l.signupCompanyLabel,
-                            icon: LucideIcons.building2,
+                            controller: _password,
+                            label: l.passwordLabel,
+                            icon: LucideIcons.lock,
+                            obscureText: true,
+                            validator: (v) => _passwordValidator(v, l),
                             textInputAction: TextInputAction.next,
                           ),
                           const SizedBox(height: 14),
                           _Field(
-                            controller: _role,
-                            label: l.signupRoleLabel,
-                            icon: LucideIcons.briefcase,
+                            controller: _password2,
+                            label: l.passwordConfirmLabel,
+                            icon: LucideIcons.lock,
+                            obscureText: true,
+                            validator: (v) =>
+                                v != _password.text ? l.passwordMismatch : null,
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _submit(),
                           ),
@@ -247,7 +268,10 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               TextButton(
                                 onPressed: () =>
-                                    Navigator.of(context).maybePop(),
+                                    Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (_) => const LoginEmailScreen()),
+                                ),
                                 style: TextButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
@@ -289,6 +313,7 @@ class _Field extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final bool obscureText;
 
   const _Field({
     required this.controller,
@@ -298,6 +323,7 @@ class _Field extends StatelessWidget {
     this.validator,
     this.textInputAction = TextInputAction.next,
     this.onSubmitted,
+    this.obscureText = false,
   });
 
   @override
@@ -308,6 +334,7 @@ class _Field extends StatelessWidget {
       textInputAction: textInputAction,
       onFieldSubmitted: onSubmitted,
       validator: validator,
+      obscureText: obscureText,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         labelText: label,

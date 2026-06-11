@@ -35,6 +35,12 @@ Future<void> main() async {
   // Carrega evento/atividades/oradores em background; a UI mostra loading.
   final eventState = EventState(repo)..load();
 
+  // Idioma do conteúdo (título/descrição/bio) segue o idioma escolhido na app.
+  eventState.setLanguage(appState.locale?.languageCode);
+  appState.addListener(
+    () => eventState.setLanguage(appState.locale?.languageCode),
+  );
+
   // Quando a agenda muda (incl. em tempo real), reconcilia os lembretes: se o
   // horário de uma sessão marcada mudou, reagenda e avisa o utilizador.
   eventState.addListener(

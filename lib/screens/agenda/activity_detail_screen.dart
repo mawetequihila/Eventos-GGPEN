@@ -343,7 +343,8 @@ class _SpeakerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final repo = context.read<GgpenRepository>();
-    final org = speaker.organizacao?.trim() ?? '';
+    final lang = context.read<AppState>().locale?.languageCode;
+    final org = speaker.organizacaoFor(lang)?.trim() ?? '';
     final baseRole = org.isEmpty ? l.guestSpeaker : org;
     final fullRole =
         speaker.papel == 'moderador' ? '${l.moderator} · $baseRole' : baseRole;
@@ -366,7 +367,7 @@ class _SpeakerCard extends StatelessWidget {
               id: speaker.id,
               name: speaker.nome,
               role: fullRole,
-              bio: speaker.bio,
+              bio: speaker.bioFor(lang),
               avatarUrl: speaker.avatarUrl,
               country: speaker.pais,
               region: speaker.origem,

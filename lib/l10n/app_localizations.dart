@@ -864,6 +864,18 @@ abstract class AppLocalizations {
   /// **'Panel'**
   String get typePainel;
 
+  /// No description provided for @formatPlenaria.
+  ///
+  /// In en, this message translates to:
+  /// **'Plenary'**
+  String get formatPlenaria;
+
+  /// No description provided for @formatParalela.
+  ///
+  /// In en, this message translates to:
+  /// **'Parallel'**
+  String get formatParalela;
+
   /// No description provided for @typeFormacao.
   ///
   /// In en, this message translates to:
@@ -1332,6 +1344,108 @@ abstract class AppLocalizations {
   /// **'You must accept the terms to continue.'**
   String get signupMustAcceptTerms;
 
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @passwordConfirmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get passwordConfirmLabel;
+
+  /// No description provided for @passwordMin.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get passwordMin;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match'**
+  String get passwordMismatch;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back. Enter your details.'**
+  String get loginSubtitle;
+
+  /// No description provided for @loginSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginSubmit;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @loginNoAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get loginNoAccount;
+
+  /// No description provided for @loginCreateLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get loginCreateLink;
+
+  /// No description provided for @signupCheckEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created! Check your email to confirm and then sign in.'**
+  String get signupCheckEmail;
+
+  /// No description provided for @verifyEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get verifyEmailTitle;
+
+  /// No description provided for @verifyEmailBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a confirmation link to {email}. Open your inbox and confirm your account to sign in.'**
+  String verifyEmailBody(String email);
+
+  /// No description provided for @verifyEmailResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend email'**
+  String get verifyEmailResend;
+
+  /// No description provided for @verifyEmailResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation email sent again.'**
+  String get verifyEmailResent;
+
+  /// No description provided for @passwordResetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent you an email to reset your password.'**
+  String get passwordResetSent;
+
+  /// No description provided for @authGenericError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete. Check your details and try again.'**
+  String get authGenericError;
+
   /// No description provided for @termsDialogTitle.
   ///
   /// In en, this message translates to:
@@ -1391,6 +1505,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Just a few more details — phone, company and role.'**
   String get completeProfileSubtitle;
+
+  /// No description provided for @completeProfileReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your company and role in your profile.'**
+  String get completeProfileReminderBody;
 
   /// No description provided for @profileSaveLater.
   ///

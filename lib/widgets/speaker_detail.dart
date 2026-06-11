@@ -8,6 +8,7 @@ import '../data/ggpen_models.dart' as sb;
 import '../data/ggpen_repository.dart';
 import '../models/speaker.dart';
 import '../screens/agenda/activity_detail_screen.dart';
+import '../state/app_state.dart';
 import '../state/event_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -45,6 +46,7 @@ class _SpeakerDetailDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final lang = context.read<AppState>().locale?.languageCode;
     final muted = AppColors.navy.withValues(alpha: 0.6);
     final hasPhoto = (speaker.avatarUrl ?? '').isNotEmpty;
     final bio = speaker.bio?.trim() ?? '';
@@ -172,7 +174,7 @@ class _SpeakerDetailDialog extends StatelessWidget {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(a.titulo,
+                                                  Text(a.tituloFor(lang),
                                                       style:
                                                           AppTheme.cardTitle()),
                                                   const SizedBox(height: 3),

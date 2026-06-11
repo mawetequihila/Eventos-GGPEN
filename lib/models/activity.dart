@@ -7,6 +7,7 @@ enum ActivityType {
   lancamento,
   assinatura,
   plenaria,
+  paralela,
   painel,
   formacao,
   workshop,
@@ -23,6 +24,8 @@ extension ActivityTypeX on ActivityType {
         return l.typeAssinatura;
       case ActivityType.plenaria:
         return l.typePlenaria;
+      case ActivityType.paralela:
+        return l.formatParalela;
       case ActivityType.painel:
         return l.typePainel;
       case ActivityType.formacao:
@@ -42,6 +45,8 @@ extension ActivityTypeX on ActivityType {
         return const Color(0xFF1FB6A8);
       case ActivityType.plenaria:
         return const Color(0xFFA87BFF);
+      case ActivityType.paralela:
+        return const Color(0xFF1FB6A8);
       case ActivityType.painel:
         return const Color(0xFF5C6BC0);
       case ActivityType.formacao:
@@ -61,6 +66,8 @@ extension ActivityTypeX on ActivityType {
         return LucideIcons.handshake;
       case ActivityType.plenaria:
         return LucideIcons.usersRound;
+      case ActivityType.paralela:
+        return LucideIcons.splitSquareHorizontal;
       case ActivityType.painel:
         return LucideIcons.messageSquare;
       case ActivityType.formacao:

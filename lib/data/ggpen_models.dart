@@ -35,12 +35,28 @@ class AppEvent {
       );
 }
 
+/// Escolhe a variante de idioma (`en`/`fr`/`ar`); null se não houver tradução
+/// para esse idioma (ou se o idioma for o base, português).
+String? _pickLang(String? en, String? fr, String? ar, String? lang) {
+  switch (lang) {
+    case 'en':
+      return en;
+    case 'fr':
+      return fr;
+    case 'ar':
+      return ar;
+  }
+  return null;
+}
+
 class Activity {
   final String id;
   final String eventId;
   final String titulo;
-  final String tipo; // apresentacao | lancamento | assinatura | painel | workshop | outro
+  final String? tituloEn, tituloFr, tituloAr;
+  final String tipo; // apresentacao|lancamento|assinatura|plenaria|paralela|painel|formacao|workshop
   final String? descricao;
+  final String? descricaoEn, descricaoFr, descricaoAr;
   final String? local;
   final DateTime inicio;
   final DateTime? fim;
@@ -50,18 +66,42 @@ class Activity {
     required this.eventId,
     required this.titulo,
     required this.tipo,
+    this.tituloEn,
+    this.tituloFr,
+    this.tituloAr,
     this.descricao,
+    this.descricaoEn,
+    this.descricaoFr,
+    this.descricaoAr,
     this.local,
     required this.inicio,
     this.fim,
   });
 
+  /// Título no idioma [lang] (cai para o português se não houver tradução).
+  String tituloFor(String? lang) {
+    final v = _pickLang(tituloEn, tituloFr, tituloAr, lang);
+    return (v != null && v.trim().isNotEmpty) ? v.trim() : titulo;
+  }
+
+  /// Descrição no idioma [lang] (cai para o português se não houver tradução).
+  String? descricaoFor(String? lang) {
+    final v = _pickLang(descricaoEn, descricaoFr, descricaoAr, lang);
+    return (v != null && v.trim().isNotEmpty) ? v.trim() : descricao;
+  }
+
   factory Activity.fromMap(Map<String, dynamic> m) => Activity(
         id: m['id'] as String,
         eventId: m['event_id'] as String,
         titulo: m['titulo'] as String,
+        tituloEn: m['titulo_en'] as String?,
+        tituloFr: m['titulo_fr'] as String?,
+        tituloAr: m['titulo_ar'] as String?,
         tipo: m['tipo'] as String,
         descricao: m['descricao'] as String?,
+        descricaoEn: m['descricao_en'] as String?,
+        descricaoFr: m['descricao_fr'] as String?,
+        descricaoAr: m['descricao_ar'] as String?,
         local: m['local'] as String?,
         inicio: _wallClock(m['inicio'] as String),
         fim: m['fim'] != null ? _wallClock(m['fim'] as String) : null,
@@ -79,7 +119,9 @@ class Speaker {
   final String id;
   final String nome;
   final String? organizacao;
+  final String? organizacaoEn, organizacaoFr, organizacaoAr;
   final String? bio;
+  final String? bioEn, bioFr, bioAr;
   final String? avatarUrl;
   final String? pais; // país do orador (definido no painel)
   final String? origem; // região/origem da pessoa (definido no painel)
@@ -90,7 +132,13 @@ class Speaker {
     required this.id,
     required this.nome,
     this.organizacao,
+    this.organizacaoEn,
+    this.organizacaoFr,
+    this.organizacaoAr,
     this.bio,
+    this.bioEn,
+    this.bioFr,
+    this.bioAr,
     this.avatarUrl,
     this.pais,
     this.origem,
@@ -98,11 +146,29 @@ class Speaker {
     this.ordem,
   });
 
+  /// Cargo/organização no idioma [lang] (cai para o português).
+  String? organizacaoFor(String? lang) {
+    final v = _pickLang(organizacaoEn, organizacaoFr, organizacaoAr, lang);
+    return (v != null && v.trim().isNotEmpty) ? v.trim() : organizacao;
+  }
+
+  /// Bio no idioma [lang] (cai para o português).
+  String? bioFor(String? lang) {
+    final v = _pickLang(bioEn, bioFr, bioAr, lang);
+    return (v != null && v.trim().isNotEmpty) ? v.trim() : bio;
+  }
+
   factory Speaker.fromMap(Map<String, dynamic> m, {String papel = 'orador'}) => Speaker(
         id: m['id'] as String,
         nome: m['nome'] as String,
         organizacao: m['organizacao'] as String?,
+        organizacaoEn: m['organizacao_en'] as String?,
+        organizacaoFr: m['organizacao_fr'] as String?,
+        organizacaoAr: m['organizacao_ar'] as String?,
         bio: m['bio'] as String?,
+        bioEn: m['bio_en'] as String?,
+        bioFr: m['bio_fr'] as String?,
+        bioAr: m['bio_ar'] as String?,
         avatarUrl: m['avatar_url'] as String?,
         pais: m['pais'] as String?,
         origem: m['origem'] as String?,

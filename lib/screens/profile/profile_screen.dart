@@ -35,17 +35,10 @@ class ProfileScreen extends StatelessWidget {
     final reminderCount =
         es.activities.where((a) => state.isReminder(a.id)).length;
 
-    // Campos do perfil — vêm do perfil local (formulário) OU do Supabase (Google).
+    // Campos do perfil — nome/email vêm da sessão (Google/email) ou do local.
     final email = state.userEmail;
-    final phone = state.localProfile?['phone'] ?? state.profilePhone;
-    final company =
-        state.localProfile?['company'] ?? state.profileCompany;
-    final role = state.localProfile?['role'] ?? state.profileRole;
 
-    final hasPersonalInfo = _nonEmpty(email) ||
-        _nonEmpty(phone) ||
-        _nonEmpty(company) ||
-        _nonEmpty(role);
+    final hasPersonalInfo = _nonEmpty(email);
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -96,32 +89,6 @@ class ProfileScreen extends StatelessWidget {
                       icon: LucideIcons.mail,
                       label: l.profileFieldEmail,
                       value: email!),
-                if (_nonEmpty(phone)) ...[
-                  if (_nonEmpty(email))
-                    const Divider(height: 1, color: AppColors.line),
-                  _InfoRow(
-                      icon: LucideIcons.phone,
-                      label: l.profileFieldPhone,
-                      value: phone!),
-                ],
-                if (_nonEmpty(company)) ...[
-                  if (_nonEmpty(email) || _nonEmpty(phone))
-                    const Divider(height: 1, color: AppColors.line),
-                  _InfoRow(
-                      icon: LucideIcons.building2,
-                      label: l.profileFieldCompany,
-                      value: company!),
-                ],
-                if (_nonEmpty(role)) ...[
-                  if (_nonEmpty(email) ||
-                      _nonEmpty(phone) ||
-                      _nonEmpty(company))
-                    const Divider(height: 1, color: AppColors.line),
-                  _InfoRow(
-                      icon: LucideIcons.briefcase,
-                      label: l.profileFieldRole,
-                      value: role!),
-                ],
               ],
             ),
           ],

@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand_logo.dart';
+import 'login_email_screen.dart';
 import 'signup_screen.dart';
 
 /// Tela inicial de autenticação — leva ao formulário de cadastro.
@@ -140,7 +141,34 @@ class LoginScreen extends StatelessWidget {
                       elevation: 0,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
+                  // Quem já tem conta entra com email + palavra-passe.
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        l.signupHaveAccount,
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const LoginEmailScreen()),
+                        ),
+                        child: Text(
+                          l.signupSignInLink,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   // Rodapé subtil — assegura que o cadastro é leve e privado.
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
